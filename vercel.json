@@ -1,12 +1,16 @@
 {
+  "version": 2,
   "builds": [
     {
       "src": "caribou_dashboard/wsgi.py",
       "use": "@vercel/python",
+      "config": { "maxLambdaSize": "15mb", "runtime": "python3.9" }
+    },
+    {
+      "src": "build_files.sh",
+      "use": "@vercel/static-build",
       "config": {
-        "maxLambdaSize": "15mb",
-        "runtime": "python3.9",
-        "buildCommand": "pip install -r requirements.txt && python manage.py collectstatic --no-input && python manage.py migrate"
+        "distDir": "staticfiles"
       }
     }
   ],
