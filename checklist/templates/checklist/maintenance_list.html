@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="maintenance-dashboard">
+    <div class="dashboard-header">
+        <h1>Maintenance Dashboard</h1>
+        <div class="dashboard-actions">
+            <a href="{% url 'checklist:new_maintenance' %}" class="btn btn-primary">
+                + New Ticket
+            </a>
+        </div>
+    </div>
+
+    <div class="stats-grid">
+        {% for stat in stats %}
+        <div class="stat-card">
+            <h3>{{ stat.title }}</h3>
+            <p class="stat-value">{{ stat.value }}</p>
+            <p class="stat-subtitle">{{ stat.subtitle }}</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="chart-container">
+        <canvas id="maintenanceTrendsChart"></canvas>
+    </div>
+
+    <div class="ticket-list">
+        <h2>Recent Tickets</h2>
+        <table class="ticket-table">
+            <!-- Table content will go here -->
+        </table>
+    </div>
+</div>
+{% endblock %}

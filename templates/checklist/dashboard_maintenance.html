@@ -1,0 +1,66 @@
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="maintenance-card">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4><i class="fas fa-tools"></i> Maintenance Tickets</h4>
+                <div>
+                    <a href="{% url 'checklist:import_data' %}" class="btn-primary-custom btn-sm me-2">
+                        <i class="fas fa-file-import"></i> Import Questions
+                    </a>
+                    <a href="{% url 'checklist:export_data' %}" class="btn-primary-custom btn-sm me-2">
+                        <i class="fas fa-file-export"></i> Export Questions
+                    </a>
+                    <a href="{% url 'checklist:maintenance_list' %}" class="btn-primary-custom btn-sm">
+                        <i class="fas fa-wrench"></i> View All
+                    </a>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="text-center">
+                        <h5 class="text-warning">{{ maintenance_pending|default:0 }}</h5>
+                        <p class="mb-0 text-muted">Pending</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-center">
+                        <h5 class="text-info">{{ maintenance_in_progress|default:0 }}</h5>
+                        <p class="mb-0 text-muted">In Progress</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-center">
+                        <h5 class="text-success">{{ maintenance_completed|default:0 }}</h5>
+                        <p class="mb-0 text-muted">Completed</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-center">
+                        <h5 class="text-primary">{{ maintenance_overdue|default:0 }}</h5>
+                        <p class="mb-0 text-muted">Overdue</p>
+                    </div>
+                </div>
+            </div>
+            {% if recent_maintenance %}
+            <hr>
+            <h6>Recent Maintenance:</h6>
+            {% for ticket in recent_maintenance %}
+            <div class="visit-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-1">{{ ticket.store.name }}</h6>
+                        <p class="mb-0 text-muted">
+                            <i class="fas fa-wrench"></i> {{ ticket.issue_type }} | 
+                            <i class="fas fa-calendar"></i> {{ ticket.created_date|date:"M j, Y" }}
+                        </p>
+                    </div>
+                    <div class="text-end">
+                        <span class="badge bg-{{ ticket.get_status_color }}">{{ ticket.get_status_display }}</span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+</div>

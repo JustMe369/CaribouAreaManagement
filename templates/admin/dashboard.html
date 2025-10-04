@@ -1,0 +1,252 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block extrastyle %}
+    <link rel="stylesheet" href="{% static 'admin/css/dashboard.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block extrahead %}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+    <script src="{% static 'admin/js/dashboard.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+<div id="loading-overlay" class="loading-overlay">
+    <div class="loading-content">
+        <div class="loading-spinner"></div>
+        <p>Investment Gate | Admin Dashboard</p>
+    </div>
+</div>
+
+<div id="content-main">
+    <div class="dashboard-header">
+        <h1>{{ title }}</h1>
+        <div class="profile-card">
+            <div class="flex items-center gap-4 mb-4">
+                <div class="avatar">
+                    {{ user.first_name|first }}{{ user.last_name|first }}
+                </div>
+                <div>
+                    <h2>{{ user.get_full_name }}</h2>
+                    <p>{{ user.email }}</p>
+                    <span class="badge">{{ user.profile.get_role_display }}</span>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <p>Assigned Stores:</p>
+                    <p id="assigned-stores">{{ user.profile.stores.count }} locations</p>
+                </div>
+                <div>
+                    <p>Last Login:</p>
+                    <p>{{ user.last_login|date:'M j, Y H:i' }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="stats-grid">
+        <div class="card" onclick="window.location='{% url 'admin:checklist_store_changelist' %}'">
+            <div class="card-header">
+                <i class="fas fa-store"></i> Stores
+                <span id="total-stores" class="badge">{{ total_stores }}</span>
+            </div>
+            <div class="card-body">
+                <canvas id="storesChart"></canvas>
+                <div class="stats-footer">
+                    <span id="active-stores">{{ stores_with_recent_visits }} active this month</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" onclick="window.location='{% url 'admin:checklist_areamanagervisit_changelist' %}'">
+            <div class="card-header">
+                <i class="fas fa-clipboard-check"></i> Visits
+                <span id="total-visits" class="badge">{{ total_visits }}</span>
+            </div>
+            <div class="card-body">
+                <canvas id="visitsChart"></canvas>
+                <div class="stats-footer">
+                    <span id="monthly-visits">{{ visits_this_month }} this month</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-tools"></i> Open Maintenance Tickets
+                <span id="open-tickets" class="badge">{{ open_maintenance_tickets }}</span>
+            </div>
+            <div class="card-body">
+                <p>Tickets that require attention.</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-check-double"></i> Average Compliance
+                <span id="avg-compliance" class="badge">{{ avg_compliance }}%</span>
+            </div>
+            <div class="card-body">
+                <p>Average score across all visits.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-grid">
+        <div class="list-card">
+            <div class="card-header">
+                <i class="fas fa-history"></i> Recent Visits
+                <a href="{% url 'admin:checklist_areamanagervisit_changelist' %}">View All</a>
+            </div>
+            <div class="list-group">
+                {% for visit in recent_visits %}
+                <a href="{% url 'admin:checklist_areamanagervisit_change' visit.id %}" class="list-group-item">
+                    <strong>{{ visit.store.name }}</strong>
+                    <span class="score-badge">{{ visit.calculate_score }}%</span>
+                    <div class="visit-meta">
+                        <span>{{ visit.date|date:"M d, Y" }}</span>
+                        <span>{{ visit.manager.get_full_name|default:visit.manager.username }}</span>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <div class="list-card">
+            <div class="card-header">
+                <i class="fas fa-tasks"></i> Category Performance
+            </div>
+            <div class="list-group">
+                {% for category in category_performance %}
+                <div class="list-group-item">
+                    <strong>{{ category.question__category__name }}</strong>
+                    <span class="score-badge">{{ category.compliance }}%</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="quick-actions">
+        <h3><i class="fas fa-bolt"></i> Quick Actions</h3><br>
+        <div class="quick-links">
+            <a href="{% url 'checklist:dashboard' %}" class="quick-action">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>Check list</span>
+            </a>
+             <a href="{% url 'checklist:maintenance_list' %}" class="quick-action">
+                <i class="fas fa-question-circle"></i>
+                <span>Maintenance</span>
+            </a>
+            <a href="{% url 'checklist:checklist_history' %}" class="quick-action">
+                <i class="fas fa-clipboard"></i>
+                <span>Visits</span>
+            </a>
+             <a href="{% url 'admin:index' %}" class="quick-action">
+                <i class="fas fa-plus-circle"></i>
+                <span>Setting</span>
+            </a>
+           
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block footer %}
+    <div class="footer">
+        <p>&copy; {{ 2026 }} Investment Gate | Caribou. All rights reserved.</p>
+        <p>Version 1.0.0</p>
+    </div>
+{% endblock %}
+
+<script>
+// Consolidated dashboard functionality
+const Dashboard = {
+    init() {
+        this.autoRefresh = setInterval(this.updateDashboardStats.bind(this), 30000);
+        this.updateDashboardStats();
+    },
+
+    showLoading() {
+        document.getElementById('loading-overlay').classList.add('active');
+    },
+
+    hideLoading() {
+        document.getElementById('loading-overlay').classList.remove('active');
+    },
+
+    showNotification(message, type = 'success') {
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.innerHTML = message;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.classList.add('fade-out');
+            setTimeout(() => notification.remove(), 500);
+        }, 5000);
+    },
+
+    animateValue(elementId, start, end, duration) {
+        const element = document.getElementById(elementId);
+        if (!element) return;
+        
+        let startTimestamp = null;
+        const step = (timestamp) => {
+            if (!startTimestamp) startTimestamp = timestamp;
+            const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+            element.textContent = Math.floor(progress * (end - start) + start);
+            if (progress < 1) window.requestAnimationFrame(step);
+        };
+        window.requestAnimationFrame(step);
+    },
+
+    async updateDashboardStats() {
+        this.showLoading();
+        try {
+            const response = await fetch("{% url 'dashboard-stats' %}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': "{{ csrf_token }}",
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'same-origin'
+            });
+            
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            
+            const data = await response.json();
+            
+            // Update all metrics with animation
+            this.animateValue('total-stores', 0, data.total_stores, 1000);
+            this.animateValue('total-visits', 0, data.total_visits, 1000);
+            this.animateValue('open-tickets', 0, data.open_maintenance_tickets, 1000);
+            this.animateValue('avg-compliance', 0, data.avg_compliance, 1000);
+            
+            // Update text content
+            const activeStores = document.getElementById('active-stores');
+            const monthlyVisits = document.getElementById('monthly-visits');
+            if (activeStores) activeStores.textContent = `${data.stores_with_recent_visits} active this month`;
+            if (monthlyVisits) monthlyVisits.textContent = `${data.visits_this_month} this month`;
+            
+            // Update charts if function exists
+            if (typeof updateCharts === 'function') {
+                updateCharts(data);
+            }
+            
+        } catch (error) {
+            this.showNotification('Failed to update dashboard: ' + error.message, 'error');
+            console.error('Dashboard update error:', error);
+        } finally {
+            this.hideLoading();
+        }
+    }
+};
+
+// Initialize dashboard when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => Dashboard.init());
+</script>

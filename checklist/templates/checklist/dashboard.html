@@ -1,0 +1,362 @@
+{% extends 'checklist/base.html' %}
+{% load static %}
+
+{% block title %}Dashboard | Caribou Area Manager{% endblock %}
+
+{% block extra_head %}
+<style>
+  .kpi-card { border: 0; border-left: 4px solid transparent; }
+  .kpi-card.primary { border-left-color: #0d6efd; }
+  .kpi-card.success { border-left-color: #198754; }
+  .kpi-card.warning { border-left-color: #ffc107; }
+  .kpi-card.danger  { border-left-color: #dc3545; }
+  .kpi-card .icon { font-size: 1.25rem; opacity: .6; }
+  .kpi-value { font-size: 2rem; font-weight: 700; }
+  .badge-trend { vertical-align: middle; }
+  .section-title { font-weight: 600; }
+  .table-sm td, .table-sm th { padding: .5rem .5rem; }
+  .chart-card { min-height: 420px; }
+  .chart-wrap { position: relative; height: 320px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="mb-0"><i class="fas fa-tachometer-alt me-2"></i>Area Manager Dashboard</h2>
+      <small class="text-muted">Today: {{ today }}</small>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{% url 'checklist:new_checklist' %}" class="btn btn-primary"><i class="fas fa-clipboard-check me-1"></i> New Visit</a>
+      <a href="{% url 'checklist:checklist_history' %}" class="btn btn-outline-primary"><i class="fas fa-history me-1"></i> History</a>
+      <a href="{% url 'checklist:maintenance_list' %}" class="btn btn-outline-secondary"><i class="fas fa-tools me-1"></i> Maintenance</a>
+      <a href="{% url 'checklist:export_history_excel' %}" class="btn btn-outline-success"><i class="fas fa-file-excel me-1"></i> Export (History)</a>
+    </div>
+  </div>
+
+  <!-- KPI Row -->
+  <div class="row g-3">
+    <div class="col-12 col-md-6 col-xl-3">
+      <div class="card kpi-card primary shadow-sm">
+        <div class="card-body d-flex justify-content-between align-items-center">
+          <div>
+            <div class="text-muted">Total Visits</div>
+            <div class="kpi-value">{{ total_visits|default:0 }}</div>
+          </div>
+          <i class="fas fa-clipboard-list icon text-primary"></i>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-md-6 col-xl-3">
+      <div class="card kpi-card success shadow-sm">
+        <div class="card-body d-flex justify-content-between align-items-center">
+          <div>
+            <div class="text-muted">Compliance Rate</div>
+            <div class="kpi-value">{{ compliance_rate|default:0 }}%</div>
+            {% if performance_trend %}
+              <span class="badge rounded-pill {% if performance_trend == 'improving' %}bg-success{% elif performance_trend == 'declining' %}bg-danger{% else %}bg-secondary{% endif %} badge-trend">
+                {{ performance_trend|title }}
+              </span>
+            {% endif %}
+          </div>
+          <i class="fas fa-chart-line icon text-success"></i>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-md-6 col-xl-3">
+      <div class="card kpi-card warning shadow-sm">
+        <div class="card-body d-flex justify-content-between align-items-center">
+          <div>
+            <div class="text-muted">This Month</div>
+            <div class="kpi-value">{{ monthly_stats.visits_this_month|default:0 }}</div>
+            <small class="text-muted">Avg {{ monthly_stats.avg_score_this_month|default:0 }}%</small>
+          </div>
+          <i class="fas fa-calendar-alt icon text-warning"></i>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-md-6 col-xl-3">
+      <div class="card kpi-card danger shadow-sm">
+        <div class="card-body d-flex justify-content-between align-items-center">
+          <div>
+            <div class="text-muted">Open Actions</div>
+            <div class="kpi-value">{{ open_actions|length }}</div>
+            <small class="text-muted">Overdue {{ overdue_actions_count|default:0 }}</small>
+          </div>
+          <i class="fas fa-exclamation-triangle icon text-danger"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts Row -->
+  <div class="row g-3 mt-1">
+    <div class="col-12 col-xl-6">
+      <div class="card chart-card shadow-sm">
+        <div class="card-header bg-white">
+          <span class="section-title"><i class="fas fa-wave-square me-1"></i> Compliance Trend (Last 30 Days)</span>
+        </div>
+        <div class="card-body">
+          <div class="chart-wrap"><canvas id="complianceTrend"></canvas></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-xl-6">
+      <div class="card chart-card shadow-sm">
+        <div class="card-header bg-white">
+          <span class="section-title"><i class="fas fa-layer-group me-1"></i> Workload & Maintenance Status</span>
+        </div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-12 col-md-6">
+              <div style="position: relative; height: 250px;"><canvas id="actionsPriority"></canvas></div>
+            </div>
+            <div class="col-12 col-md-6">
+              <div style="position: relative; height: 250px;"><canvas id="maintenanceStatus"></canvas></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Category & Stores Performance Row -->
+  <div class="row g-3 mt-1">
+    <div class="col-12 col-xl-6">
+      <div class="card chart-card shadow-sm">
+        <div class="card-header bg-white">
+          <span class="section-title"><i class="fas fa-list-check me-1"></i> Category Performance</span>
+        </div>
+        <div class="card-body">
+          <div class="chart-wrap"><canvas id="categoryPerformance"></canvas></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-xl-6">
+      <div class="card chart-card shadow-sm">
+        <div class="card-header bg-white">
+          <span class="section-title"><i class="fas fa-store me-1"></i> Stores Performance (Top 10)</span>
+        </div>
+        <div class="card-body">
+          <div class="chart-wrap"><canvas id="storesPerformance"></canvas></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tables Row -->
+  <div class="row g-3 mt-1">
+    <div class="col-12 col-xl-6">
+      <div class="card shadow-sm">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+          <span class="section-title"><i class="fas fa-clock me-1"></i> Recent Visits</span>
+          <a href="{% url 'checklist:checklist_history' %}" class="btn btn-sm btn-outline-primary">View all</a>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-sm table-striped mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Store</th>
+                <th>Date</th>
+                <th>Manager</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for v in recent_visits %}
+              <tr>
+                <td>{{ v.store.name }}</td>
+                <td>{{ v.date }}</td>
+                <td>{{ v.manager.get_full_name|default:v.manager.username }}</td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="3" class="text-muted">No recent visits.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-xl-6">
+      <div class="card shadow-sm">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+          <span class="section-title"><i class="fas fa-store me-1"></i> Store Performance (Top)</span>
+          <a href="{% url 'checklist:store_management' %}" class="btn btn-sm btn-outline-secondary">Manage</a>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-sm table-striped mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Store</th>
+                <th>Visits</th>
+                <th>Avg Score</th>
+                <th>Last Visit</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for s in store_performance %}
+              <tr>
+                <td>{{ s.store.name }}</td>
+                <td>{{ s.visit_count }}</td>
+                <td>{{ s.avg_score }}%</td>
+                <td>{{ s.last_visit|default:'-' }}</td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="4" class="text-muted">No performance data.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Prepare data from context safely
+  const labels = [{% for d in chart_dates %}'{{ d }}'{% if not forloop.last %},{% endif %}{% endfor %}];
+  const scores = [{% for s in chart_scores %}{{ s|default:0 }}{% if not forloop.last %},{% endif %}{% endfor %}];
+
+  const actionsData = {
+    high: {{ open_actions_high|default:5 }},
+    medium: {{ open_actions_medium|default:8 }},
+    low: {{ open_actions_low|default:3 }}
+  };
+
+  const maintenanceData = {
+    pending: {{ maintenance_stats.pending|default:12 }},
+    in_progress: {{ maintenance_stats.in_progress|default:7 }},
+    completed: {{ maintenance_stats.completed|default:25 }}
+  };
+
+  // Compliance Trend
+  const ctxTrend = document.getElementById('complianceTrend').getContext('2d');
+  new Chart(ctxTrend, {
+    type: 'line',
+    data: {
+      labels: labels.length ? labels : ['No Data'],
+      datasets: [{
+        label: 'Compliance %',
+        data: scores.length ? scores : [0],
+        borderColor: '#0d6efd',
+        backgroundColor: 'rgba(13,110,253,.08)',
+        tension: .25,
+        fill: true,
+        pointRadius: 3,
+        pointBackgroundColor: '#0d6efd',
+        pointBorderWidth: 0,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, max: 100, ticks: { callback: v => v + '%' } },
+        x: { display: true }
+      }
+    }
+  });
+
+  // Action Items by Priority
+  const ctxActions = document.getElementById('actionsPriority').getContext('2d');
+  new Chart(ctxActions, {
+    type: 'doughnut',
+    data: {
+      labels: ['High Priority', 'Medium Priority', 'Low Priority'],
+      datasets: [{
+        data: [actionsData.high, actionsData.medium, actionsData.low],
+        backgroundColor: ['#dc3545', '#ffc107', '#198754'],
+        borderWidth: 2,
+        borderColor: '#fff'
+      }]
+    },
+    options: { 
+      responsive: true, 
+      maintainAspectRatio: false, 
+      plugins: { 
+        legend: { 
+          position: 'bottom',
+          labels: {
+            padding: 15,
+            usePointStyle: true,
+            font: { size: 12 }
+          }
+        }
+      }
+    }
+  });
+
+  // Maintenance Status
+  const ctxMaint = document.getElementById('maintenanceStatus').getContext('2d');
+  new Chart(ctxMaint, {
+    type: 'doughnut',
+    data: {
+      labels: ['Pending', 'In Progress', 'Completed'],
+      datasets: [{
+        data: [maintenanceData.pending, maintenanceData.in_progress, maintenanceData.completed],
+        backgroundColor: ['#6c757d', '#0dcaf0', '#198754'],
+        borderWidth: 2,
+        borderColor: '#fff'
+      }]
+    },
+    options: { 
+      responsive: true, 
+      maintainAspectRatio: false, 
+      plugins: { 
+        legend: { 
+          position: 'bottom',
+          labels: {
+            padding: 15,
+            usePointStyle: true,
+            font: { size: 12 }
+          }
+        }
+      }
+    }
+  });
+
+  // Category Performance (bar)
+  const categoryLabels = [{% for c in category_labels %}'{{ c }}'{% if not forloop.last %},{% endif %}{% endfor %}];
+  const categoryScores = [{% for s in category_scores %}{{ s|default:0 }}{% if not forloop.last %},{% endif %}{% endfor %}];
+  const ctxCat = document.getElementById('categoryPerformance').getContext('2d');
+  new Chart(ctxCat, {
+    type: 'bar',
+    data: {
+      labels: categoryLabels,
+      datasets: [{
+        label: 'Compliance %',
+        data: categoryScores,
+        backgroundColor: '#0d6efd',
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true, max: 100, ticks: { callback: (v) => v + '%' } } }
+    }
+  });
+
+  // Stores Performance (horizontal bar)
+  const storeLabels = [{% for s in store_labels %}'{{ s }}'{% if not forloop.last %},{% endif %}{% endfor %}];
+  const storeScores = [{% for s in store_scores %}{{ s|default:0 }}{% if not forloop.last %},{% endif %}{% endfor %}];
+  const ctxStores = document.getElementById('storesPerformance').getContext('2d');
+  new Chart(ctxStores, {
+    type: 'bar',
+    data: {
+      labels: storeLabels,
+      datasets: [{ label: 'Avg Score %', data: storeScores, backgroundColor: '#20c997' }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: { x: { beginAtZero: true, max: 100, ticks: { callback: (v) => v + '%' } } }
+    }
+  });
+</script>
+{% endblock %}

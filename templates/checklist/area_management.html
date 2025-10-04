@@ -1,0 +1,186 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid">
+    <h1 class="mt-4">Area Management</h1>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5>Areas</h5>
+                    <button class="btn btn-success" data-toggle="modal" data-target="#configureAreaModal">
+                        <i class="fas fa-cog"></i> Configure Areas
+                    </button>
+                </div>
+                <div class="card-body">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Area</th>
+                                <th>Stores</th>
+                                <th>Users</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for area in areas %}
+                            <tr>
+                                <td>{{ area.name }}</td>
+                                <td>
+                                    <ul>
+                                        {% for store in area.stores.all %}
+                                        <li>{{ store.name }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </td>
+                                <td>
+                                    <ul>
+                                        {% for profile in area.profile_set.all %}
+                                        <li>{{ profile.user.username }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </td>
+                                <td>
+                                    <a href="#" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#assignStoreModal-{{ area.id }}">Assign Store</a>
+                                    <a href="#" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#assignUserModal-{{ area.id }}">Assign User</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    Add New Area
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{% url 'checklist:area_management' %}">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="name">Area Name</label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="description">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Add Area</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Configure Area Modal -->
+<div class="modal fade" id="configureAreaModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Configure Store Areas</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Stores Without Areas</h6>
+                        <ul class="list-group">
+                            {% for store in unassigned_stores %}
+                            <li class="list-group-item">
+                                {{ store.name }}
+                                <button class="btn btn-sm btn-primary float-right" 
+                                    onclick="assignStoreToArea({{ store.id }})">
+                                    Assign
+                                </button>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Select Area</label>
+                            <select class="form-control" id="areaSelect">
+                                {% for area in areas %}
+                                <option value="{{ area.id }}">{{ area.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% for area in areas %}
+<!-- Assign Store Modal -->
+<div class="modal fade" id="assignStoreModal-{{ area.id }}" tabindex="-1" role="dialog" aria-labelledby="assignStoreModalLabel-{{ area.id }}" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="assignStoreModalLabel-{{ area.id }}">Assign Store to {{ area.name }}</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form method="post" action="{% url 'checklist:assign_store_to_area' area.id %}">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="store">Store</label>
+                        <select class="form-control" id="store" name="store" required>
+                            {% for store in all_stores %}
+                            <option value="{{ store.id }}">{{ store.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Assign Store</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Assign User Modal -->
+<div class="modal fade" id="assignUserModal-{{ area.id }}" tabindex="-1" role="dialog" aria-labelledby="assignUserModalLabel-{{ area.id }}" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="assignUserModalLabel-{{ area.id }}">Assign User to {{ area.name }}</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form method="post" action="{% url 'checklist:assign_user_to_area' area.id %}">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="user">User</label>
+                        <select class="form-control" id="user" name="user" required>
+                            {% for user in all_users %}
+                            <option value="{{ user.id }}">{{ user.username }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Assign User</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'checklist/js/area_management.js' %}"></script>
+{% endblock %}

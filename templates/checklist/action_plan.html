@@ -1,0 +1,248 @@
+
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}Action Plan{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h2">Action Plan</h1>
+            <p class="text-muted">Track, manage, and resolve action items across all stores.</p>
+        </div>
+    </div>
+
+    <!-- Statistics -->
+    <div class="row">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-tasks fa-2x text-primary"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h5 class="card-title mb-1">Total Items</h5>
+                            <p class="card-text fs-4 fw-bold">{{ stats.total }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-check-circle fa-2x text-success"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h5 class="card-title mb-1">Completed</h5>
+                            <p class="card-text fs-4 fw-bold">{{ stats.completed }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-exclamation-circle fa-2x text-warning"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h5 class="card-title mb-1">Open</h5>
+                            <p class="card-text fs-4 fw-bold">{{ stats.open }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-calendar-times fa-2x text-danger"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h5 class="card-title mb-1">Overdue</h5>
+                            <p class="card-text fs-4 fw-bold">{{ stats.overdue }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Filters and Actions -->
+        <div class="col-lg-3">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Filters</h5>
+                </div>
+                <div class="card-body">
+                    <form method="get">
+                        <div class="mb-3">
+                            <label for="search" class="form-label">Search</label>
+                            <input type="text" name="search" id="search" class="form-control" placeholder="Description..." value="{{ filters.search }}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="status" class="form-label">Status</label>
+                            <select name="status" id="status" class="form-select">
+                                <option value="">All</option>
+                                <option value="open" {% if filters.status == 'open' %}selected{% endif %}>Open</option>
+                                <option value="completed" {% if filters.status == 'completed' %}selected{% endif %}>Completed</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="priority" class="form-label">Priority</label>
+                            <select name="priority" id="priority" class="form-select">
+                                <option value="">All</option>
+                                <option value="high" {% if filters.priority == 'high' %}selected{% endif %}>High</option>
+                                <option value="medium" {% if filters.priority == 'medium' %}selected{% endif %}>Medium</option>
+                                <option value="low" {% if filters.priority == 'low' %}selected{% endif %}>Low</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="store" class="form-label">Store</label>
+                            <select name="store" id="store" class="form-select">
+                                <option value="">All</option>
+                                {% for store in stores %}
+                                <option value="{{ store.id }}" {% if filters.store == store.id|stringformat:"s" %}selected{% endif %}>{{ store.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="date_filter" class="form-label">Due Date</label>
+                            <input type="date" name="date_filter" id="date_filter" class="form-control" value="{{ filters.date_filter }}">
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">Apply Filters</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">Bulk Actions</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{% url 'checklist:bulk_update_action_items' %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <select name="bulk_action" class="form-select">
+                                <option value="">Choose Action...</option>
+                                <option value="mark_completed">Mark as Completed</option>
+                                <option value="set_high">Set Priority: High</option>
+                                <option value="set_medium">Set Priority: Medium</option>
+                                <option value="set_low">Set Priority: Low</option>
+                            </select>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-secondary">Apply to Selected</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Items Table -->
+        <div class="col-lg-9">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th scope="col" class="text-center" style="width: 5%;"><input type="checkbox" id="selectAll"></th>
+                                    <th scope="col">Description</th>
+                                    <th scope="col">Store</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col">Priority</th>
+                                    <th scope="col">Due Date</th>
+                                    <th scope="col" class="text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in page_obj %}
+                                <tr>
+                                    <td class="text-center"><input type="checkbox" name="item_ids" value="{{ item.id }}" form="bulk-action-form"></td>
+                                    <td>{{ item.description }}</td>
+                                    <td>{{ item.visit.store.name }}</td>
+                                    <td>
+                                        <span class="badge 
+                                            {% if item.status == 'completed' %}bg-success
+                                            {% elif item.status == 'open' and item.timeframe < today %}bg-danger
+                                            {% else %}bg-warning{% endif %}">
+                                            {% if item.status == 'open' and item.timeframe < today %}Overdue{% else %}{{ item.get_status_display }}{% endif %}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge 
+                                            {% if item.priority == 'high' %}bg-danger
+                                            {% elif item.priority == 'medium' %}bg-warning
+                                            {% else %}bg-secondary{% endif %}">
+                                            {{ item.get_priority_display }}
+                                        </span>
+                                    </td>
+                                    <td>{{ item.timeframe|date:"Y-m-d" }}</td>
+                                    <td class="text-center">
+                                        <a href="{% url 'checklist:update_action_item' item.id %}" class="btn btn-sm btn-outline-primary">Edit</a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center py-5">
+                                        <i class="fas fa-check-double fa-3x text-muted mb-3"></i>
+                                        <h4 class="mb-1">All Clear!</h4>
+                                        <p class="text-muted">No action items found matching your criteria.</p>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            {% if page_obj.has_other_pages %}
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item"><a class="page-link" href="?page=1">&laquo; First</a></li>
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                    <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+                    {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last &raquo;</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('selectAll').addEventListener('change', function(e) {
+    var checkboxes = document.querySelectorAll('input[name="item_ids"]');
+    for (var checkbox of checkboxes) {
+        checkbox.checked = e.target.checked;
+    }
+});
+</script>
+{% endblock %}

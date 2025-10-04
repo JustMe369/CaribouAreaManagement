@@ -1,0 +1,39 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+<a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
+&rsaquo; <a href="{% url 'admin:app_list' app_label='checklist' %}">{% trans 'Checklist' %}</a>
+&rsaquo; <a href="{% url 'admin:checklist_area_changelist' %}">{% trans 'Areas' %}</a>
+&rsaquo; {% trans 'User Assignment' %}
+</div>
+{% endblock %}
+
+{% block content %}
+<div id="content-main">
+    <h1>{{ title }}</h1>
+    
+    <div class="module">
+        <h2>Selected Areas:</h2>
+        <ul>
+            {% for area in areas %}
+            <li>{{ area.name }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    
+    <form method="post">
+        {% csrf_token %}
+        <div class="module">
+            <h2>Select Users:</h2>
+            {{ form.as_p }}
+        </div>
+        
+        <div class="submit-row">
+            <input type="submit" value="{% if action == 'assign' %}Assign Users{% else %}Remove Users{% endif %}" class="default">
+            <a href="{% url 'admin:checklist_area_changelist' %}" class="button">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

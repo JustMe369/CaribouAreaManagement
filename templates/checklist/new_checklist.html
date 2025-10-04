@@ -1,0 +1,686 @@
+{% extends 'checklist/base.html' %}
+{% load crispy_forms_tags %}
+{% load checklist_tags %}
+{% load static %}
+
+{% block extra_head %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Caribou Coffee Area Manager Checklist System">
+    <title>Area Manager Checklist - Caribou Coffee</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'checklist/css/new_checklist.css' %}">
+    <link rel="preload" href="{% static 'checklist/js/new_checklist.js' %}" as="script">
+{% endblock %}
+
+{% block content %}
+<!-- Progress Bar -->
+<div class="progress-container">
+    <div class="progress-bar" id="progress-bar"></div>
+</div>
+
+<!-- Back to Top Button -->
+<button id="back-to-top" title="Back to top">
+    <i class="fas fa-arrow-up"></i>
+</button>
+
+<div class="new-checklist-container">
+    <div class="header-section">
+        <h1 class="main-title">Caribou Coffee - Area Manager Checklist</h1>
+        <p class="subtitle">Complete this form to document your store visit and identify action items</p>
+    </div>
+
+    {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {% comment %} <!-- Form Summary Card -->
+    <div class="form-card mb-4 summary-card">
+        <div class="form-card-header">
+            <h2><i class="fas fa-clipboard-check me-2"></i>Visit Summary</h2>
+        </div>
+        <div class="form-card-body">
+            <div class="summary-stats">
+                <div class="summary-stat">
+                    <i class="fas fa-tasks"></i>
+                    <span id="total-questions">0</span>
+                    <span>Total Questions</span>
+                </div>
+                <div class="summary-stat">
+                    <i class="fas fa-check-circle"></i>
+                    <span id="completed-questions">0</span>
+                    <span>Completed</span>
+                </div>
+                <div class="summary-stat">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span id="action-items">0</span>
+                    <span>Action Items</span>
+                </div>
+                <div class="summary-stat">
+                    <i class="fas fa-percentage"></i>
+                    <span id="completion-percentage">0%</span>
+                    <span>Completion</span>
+                </div>
+            </div>
+        </div>
+    </div> {% endcomment %}
+
+    <form method="post" enctype="multipart/form-data" id="checklist-form" aria-label="Caribou Area Manager Checklist Form">
+        {% csrf_token %}
+
+        <!-- Visit Details Card -->
+        <div class="form-card mb-4">
+            <div class="form-card-header">
+                  <div class="store-selection">
+                        <h3 class="h5 mb-3"><i class="fas fa-store me-2"></i>Caribou Coffee</h3>
+                        {% if single_store %}
+                            <div class="selected-store d-flex align-items-center p-3 mb-3 rounded-3" 
+                                 style="background: rgba(46, 204, 113, 0.1);
+                                        border: 1px solid rgba(46, 204, 113, 0.3);">
+                                <i class="fas fa-check-circle text-success me-2 fs-4"></i>
+                                <div>
+                                    <div class="fw-bold">{{ single_store.name }}</div>
+                                    <small class="text-muted">{{ single_store.manager_name }}</small>
+                                </div>
+                            </div>
+                            <input type="hidden" name="store" value="{{ single_store.id }}">
+                        {% else %}
+                            <div class="mb-3">
+                                <label for="store" class="form-label required-field">Select Branch</label>
+                                <select class="form-select" id="store" name="store" required>
+                                    <option value="" disabled selected>Select a branch...</option>
+                                    {% for store in stores %}
+                                        <option value="{{ store.id }}" {% if store.id|stringformat:"s" == form_data.store %}selected{% endif %}>
+                                            {{ store.name }} - {{ store.manager_name }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                                <div class="invalid-feedback">Please select a store.</div>
+                            </div>
+                        {% endif %}
+                    </div>
+            </div>
+            <div class="form-card-body">
+                <div class="form-grid">
+                    <div class="visit-time">
+                        <h3 class="h5 mb-3"><i class="fas fa-clock me-2"></i>Visit Time</h3>
+                        <div class="mb-3">
+                            <label for="id_visit_date" class="form-label required-field"><i class="fas fa-calendar me-2"></i>Date</label>
+                            <input type="date" class="form-control" id="id_visit_date" name="visit_date" 
+                                   value="{{ form_data.visit_date|default:current_date }}" required
+                                   min="{{ min_date|date:'Y-m-d' }}" max="{{ max_date|date:'Y-m-d' }}">
+                            <div class="invalid-feedback">Please select a valid visit date.</div>
+                        </div>
+                        <div class="time-fields">
+                            <div class="mb-3">
+                                <label for="id_time_in" class="form-label required-field"><i class="fas fa-sign-in-alt me-2"></i>Time In</label>
+                                <input type="time" class="form-control" id="id_time_in" name="time_in" 
+                                       value="{{ form_data.time_in|default:current_time }}" required>
+                                <div class="invalid-feedback">Please enter the time you arrived.</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="id_time_out" class="form-label"><i class="fas fa-sign-out-alt me-2"></i>Time Out</label>
+                                <input type="time" class="form-control" id="id_time_out" name="time_out" 
+                                       value="{{ form_data.time_out }}">
+                                <div class="invalid-feedback">Please enter a valid time.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Checklist Categories -->
+        <div id="checklist-categories">
+            {% for category, questions in questions_by_category.items %}
+                <div class="category-card mb-4" data-category="{{ category.name|slugify }}">
+                    <button type="button" class="category-header modern-header" onclick="toggleCategory(this)" aria-expanded="false">
+                        <div class="header-left">
+                            <div class="icon-container">
+                                <i class="fas fa-chevron-down category-icon"></i>
+                            </div>
+                            <h3 class="category-name">{{ category.name }}</h3>
+                        </div>
+                        <div class="header-right">
+                            <div class="progress-badge">
+                                <span class="category-progress">0/{{ questions|length }}</span>
+                            </div>
+                        </div>
+                    </button>
+                    <div class="category-content">
+                        <div class="checklist-items">
+                            {% for question in questions %}
+                                <div class="question-item" data-question-id="{{ question.id }}">
+                                    <div class="question-text">{{ question.number }}. {{ question.text }}</div>
+                                    <div class="question-options">
+                                        <div class="form-check form-switch">
+                                            {% with question_id=question.id|stringformat:"s" %}
+                                                <input class="form-check-input" type="checkbox" id="q_{{ question_id }}" name="q_{{ question_id }}" value="true" {% if form_data %}{% with q_key='q_'|add:question_id %}{% if form_data|get_item:q_key %}checked{% endif %}{% endwith %}{% endif %}>
+                                                <label class="form-check-label" for="q_{{ question_id }}">No/Yes</label>
+                                            {% endwith %}
+                                        </div>
+                                    </div>
+                                    <div class="comment-section mt-2">
+                                        {% with comment_key='comment_'|add:question.id|stringformat:"s" %}
+                                            <label for="comment_{{ question.id }}" class="form-label comment-label">Notes for question {{ question.number }}</label>
+                                            <textarea class="form-control" id="comment_{{ question.id }}" name="comment_{{ question.id }}" rows="2" placeholder="Add notes here... (Required if answer is No)">{{ form_data|get_item:comment_key|default_if_none:'' }}</textarea>
+                                            <div class="invalid-feedback">Please provide notes for this item.</div>
+                                        {% endwith %}
+                                    </div>
+                                    <div class="attachment-section mt-2">
+                                        <div class="file-input-wrapper">
+                                            <input type="file" id="file_{{ question.id }}" name="file_{{ question.id }}" 
+                                                   class="file-input" accept="image/*,.pdf,.doc,.docx">
+                                            <label for="file_{{ question.id }}" class="btn btn-sm btn-file">
+                                                <i class="fas fa-upload me-1"></i> Choose File
+                                            </label>
+                                            <span class="file-name" id="file-name-{{ question.id }}">No file chosen</span>
+                                        </div>
+                                        <div class="invalid-feedback file-error" id="file-error-{{ question.id }}"></div>
+                                        <div class="image-preview-container mt-2" style="display: none;">
+                                            <img class="image-preview" id="preview_{{ question.id }}" src="#" alt="Preview" style="display: none; max-width: 200px; max-height: 200px; border-radius: 8px;">
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <script>
+        // Toggle category function
+        function toggleCategory(button) {
+            const categoryCard = button.closest('.category-card');
+            const content = categoryCard.querySelector('.category-content');
+            
+            if (content.style.display === 'none' || !content.style.display) {
+                content.style.display = 'block';
+                button.classList.add('open');
+                button.setAttribute('aria-expanded', 'true');
+            } else {
+                content.style.display = 'none';
+                button.classList.remove('open');
+                button.setAttribute('aria-expanded', 'false');
+            }
+        }
+
+        // Update progress counter
+        function updateProgress() {
+            document.querySelectorAll('.category-card').forEach(card => {
+                const checkboxes = card.querySelectorAll('input[type="checkbox"]');
+                const checked = card.querySelectorAll('input[type="checkbox"]:checked').length;
+                const total = checkboxes.length;
+                const progressSpan = card.querySelector('.category-progress');
+                if (progressSpan) {
+                    progressSpan.textContent = `${checked}/${total}`;
+                }
+            });
+        }
+
+        // File upload handler
+        function setupFileHandlers() {
+            document.querySelectorAll('input[type="file"]').forEach(input => {
+                input.addEventListener('change', function() {
+                    const fileName = this.files[0] ? this.files[0].name : 'No file chosen';
+                    const fileNameSpan = this.parentElement.querySelector('.file-name');
+                    if (fileNameSpan) {
+                        fileNameSpan.textContent = fileName;
+                    }
+                });
+            });
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Close all collapsible sections initially (categories + additional notes)
+            document.querySelectorAll('.category-content').forEach(content => {
+                content.style.display = 'none';
+            });
+            
+            // Setup file handlers
+            setupFileHandlers();
+            
+            // Setup checkbox change handlers for progress
+            document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                checkbox.addEventListener('change', updateProgress);
+            });
+            
+            // Initial progress update
+            updateProgress();
+            
+            // Save as Draft handler
+            document.getElementById('save-draft-btn').addEventListener('click', function() {
+                const form = document.getElementById('checklist-form');
+                const actionInput = document.createElement('input');
+                actionInput.type = 'hidden';
+                actionInput.name = 'action';
+                actionInput.value = 'draft';
+                form.appendChild(actionInput);
+                form.submit();
+            });
+        });
+        </script>
+
+        <!-- Additional Notes Card -->
+        <div class="category-card mb-4">
+            <button type="button" class="category-header modern-header" onclick="toggleCategory(this)" aria-expanded="false">
+                <div class="header-left">
+                    <div class="icon-container">
+                        <i class="fas fa-chevron-down category-icon"></i>
+                    </div>
+                    <h3 class="category-name">Additional Notes</h3>
+                </div>
+            </button>
+            <div class="category-content">
+                <div class="checklist-items" style="padding: 20px;">
+                    <div class="mb-3">
+                        <label for="general_notes" class="form-label">General Notes</label>
+                        <textarea class="form-control" id="general_notes" name="general_notes" rows="3" placeholder="Add any general notes about the visit...">{{ form_data.general_notes|default_if_none:'' }}</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="run_out_items" class="form-label">Run Out Items</label>
+                        <textarea class="form-control" id="run_out_items" name="run_out_items" rows="2" placeholder="List any items that are running low or out of stock...">{{ form_data.run_out_items|default_if_none:'' }}</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="maintenance_needed" class="form-label">Maintenance Needed</label>
+                        <textarea class="form-control" id="maintenance_needed" name="maintenance_needed" rows="2" placeholder="Describe any maintenance issues that need attention...">{{ form_data.maintenance_needed|default_if_none:'' }}</textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Submission Section -->
+        <div class="submission-section">
+            <div class="d-flex justify-content-center gap-3">
+                <button type="button" id="save-draft-btn" class="submit-btn draft-btn">
+                    <i class="fas fa-save"></i>
+                    <span class="btn-text">Save as Draft</span>
+                </button>
+                <button type="submit" name="action" value="submit" class="submit-btn" id="submit-checklist">
+                    <i class="fas fa-paper-plane"></i>
+                    <span class="btn-text">Submit Checklist</span>
+                </button>
+            </div>
+            <div class="form-text text-center mt-3">
+                <i class="fas fa-info-circle me-1"></i> Draft will save your progress. Submit will finalize the checklist.
+            </div>
+        </div>
+    </form>
+
+    <!-- Confirmation Modal -->
+    <div class="modal fade" id="confirmSubmitModal" tabindex="-1" aria-labelledby="confirmSubmitModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmSubmitModalLabel">Confirm Submission</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to submit this checklist? Once submitted, it cannot be edited.</p>
+                    <div class="submission-summary">
+                        <p><strong>Store:</strong> <span id="modal-store-name"></span></p>
+                        <p><strong>Date:</strong> <span id="modal-visit-date"></span></p>
+                        <p><strong>Completion:</strong> <span id="modal-completion"></span></p>
+                        <p><strong>Action Items:</strong> <span id="modal-action-items"></span></p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="confirm-submit">Submit Checklist</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Draft Saved Modal -->
+    <div class="modal fade" id="draftSavedModal" tabindex="-1" aria-labelledby="draftSavedModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="draftSavedModalLabel">Draft Saved</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="text-center">
+                        <i class="fas fa-check-circle text-success" style="font-size: 3rem;"></i>
+                        <p class="mt-3">Your checklist has been saved as a draft.</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <a href="{% url 'checklist:checklist_history' %}" class="btn btn-primary">View History</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_script %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// Global function for onclick handlers
+function toggleCategory(header) {
+    const content = header.nextElementSibling;
+    const icon = header.querySelector('.category-icon');
+    
+    if (content.style.maxHeight) {
+        content.style.maxHeight = null;
+        icon.classList.remove('fa-chevron-up');
+        icon.classList.add('fa-chevron-down');
+        header.setAttribute('aria-expanded', 'false');
+    } else {
+        content.style.maxHeight = content.scrollHeight + "px";
+        icon.classList.remove('fa-chevron-down');
+        icon.classList.add('fa-chevron-up');
+        header.setAttribute('aria-expanded', 'true');
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    let totalQuestions = 0;
+    let completedQuestions = 0;
+    let actionItems = 0;
+    
+    const form = document.getElementById('checklist-form');
+    const questionItems = document.querySelectorAll('.question-item');
+    
+    // Initialize
+    totalQuestions = questionItems.length;
+    document.getElementById('total-questions').textContent = totalQuestions;
+    
+    // File upload helper functions
+    function getFileElements(questionId) {
+        console.log('Getting elements for question ID:', questionId);
+        const elements = {
+            fileNameElement: document.getElementById(`file-name-${questionId}`),
+            preview: document.getElementById(`preview_${questionId}`),
+            errorElement: document.getElementById(`file-error-${questionId}`)
+        };
+        console.log('Elements found:', {
+            fileNameElement: !!elements.fileNameElement,
+            preview: !!elements.preview,
+            errorElement: !!elements.errorElement
+        });
+        return elements;
+    }
+    
+    function clearFileError(input, elements) {
+        if (elements.errorElement) {
+            elements.errorElement.textContent = '';
+            input.classList.remove('is-invalid');
+        }
+    }
+    
+    function resetFileDisplay(elements) {
+        if (elements.fileNameElement) elements.fileNameElement.textContent = 'No file chosen';
+        if (elements.preview) {
+            elements.preview.style.display = 'none';
+            elements.preview.src = '#';
+            elements.preview.parentElement.style.display = 'none';
+        }
+    }
+    
+    function validateFile(file) {
+        const maxSize = 5 * 1024 * 1024;
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf'];
+        
+        if (file.size > maxSize) return { valid: false, error: 'File must be less than 5MB' };
+        if (!allowedTypes.includes(file.type)) return { valid: false, error: 'Only images and PDF files allowed' };
+        return { valid: true };
+    }
+    
+    function showFileError(input, elements, error) {
+        if (elements.errorElement) {
+            elements.errorElement.textContent = error;
+            input.classList.add('is-invalid');
+        }
+        input.value = '';
+        resetFileDisplay(elements);
+    }
+    
+    function updateFileDisplay(file, elements) {
+        console.log('Updating file display for:', file.name);
+        console.log('File name element found:', !!elements.fileNameElement);
+        
+        if (elements.fileNameElement) {
+            elements.fileNameElement.textContent = file.name;
+            console.log('File name updated to:', file.name);
+        } else {
+            console.error('File name element not found');
+        }
+        
+        if (file.type.startsWith('image/') && elements.preview) {
+            const reader = new FileReader();
+            reader.onload = e => {
+                elements.preview.src = e.target.result;
+                elements.preview.style.display = 'block';
+                elements.preview.parentElement.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+    
+    // File upload handler
+    document.querySelectorAll('.file-input').forEach(input => {
+        input.addEventListener('change', function() {
+            console.log('File input changed:', this.id);
+            const questionId = this.id.split('_')[1];
+            console.log('Extracted question ID:', questionId);
+            
+            // Direct element selection as backup
+            const fileNameSpan = this.parentElement.querySelector('.file-name');
+            console.log('Direct file name element found:', !!fileNameSpan);
+            
+            const elements = getFileElements(questionId);
+            
+            clearFileError(this, elements);
+            
+            if (!this.files[0]) {
+                resetFileDisplay(elements);
+                if (fileNameSpan) fileNameSpan.textContent = 'No file chosen';
+                return;
+            }
+            
+            const file = this.files[0];
+            console.log('File selected:', file.name);
+            const validation = validateFile(file);
+            
+            if (!validation.valid) {
+                showFileError(this, elements, validation.error);
+                if (fileNameSpan) fileNameSpan.textContent = 'No file chosen';
+                return;
+            }
+            
+            // Update file name using both methods
+            updateFileDisplay(file, elements);
+            if (fileNameSpan) {
+                fileNameSpan.textContent = file.name;
+                console.log('Direct update successful:', file.name);
+            }
+        });
+    });
+    
+    // Checkbox handlers
+    document.querySelectorAll('.form-check-input').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const questionItem = this.closest('.question-item');
+            const commentSection = questionItem.querySelector('.comment-section');
+            const textarea = commentSection.querySelector('textarea');
+            
+            if (this.checked) {
+                commentSection.style.display = 'none';
+                textarea.removeAttribute('required');
+                questionItem.classList.add('question-completed');
+                if (!questionItem.classList.contains('counted-complete')) {
+                    completedQuestions++;
+                    questionItem.classList.add('counted-complete');
+                }
+            } else {
+                commentSection.style.display = 'block';
+                textarea.setAttribute('required', 'required');
+                questionItem.classList.remove('question-completed');
+                if (questionItem.classList.contains('counted-complete')) {
+                    completedQuestions--;
+                    questionItem.classList.remove('counted-complete');
+                }
+            }
+            updateStats();
+        });
+    });
+    
+    // Textarea handlers
+    document.querySelectorAll('.comment-section textarea').forEach(textarea => {
+        textarea.addEventListener('input', function() {
+            const questionItem = this.closest('.question-item');
+            const checkbox = questionItem.querySelector('.form-check-input');
+            
+            if (!checkbox.checked) {
+                if (this.value.trim() && !questionItem.classList.contains('counted-action')) {
+                    actionItems++;
+                    questionItem.classList.add('counted-action');
+                } else if (!this.value.trim() && questionItem.classList.contains('counted-action')) {
+                    actionItems--;
+                    questionItem.classList.remove('counted-action');
+                }
+                updateStats();
+            }
+        });
+    });
+    
+    function updateStats() {
+        document.getElementById('completed-questions').textContent = completedQuestions;
+        document.getElementById('action-items').textContent = actionItems;
+        const percentage = totalQuestions > 0 ? Math.round((completedQuestions / totalQuestions) * 100) : 0;
+        document.getElementById('completion-percentage').textContent = `${percentage}%`;
+    }
+    
+    // Form validation helper functions
+    function validateRequiredFields() {
+        let isValid = true;
+        form.querySelectorAll('[required]').forEach(field => {
+            if (!field.value.trim()) {
+                field.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                field.classList.remove('is-invalid');
+            }
+        });
+        return isValid;
+    }
+    
+    function validateTimeFields() {
+        const timeIn = document.getElementById('id_time_in');
+        const timeOut = document.getElementById('id_time_out');
+        
+        if (timeIn.value && timeOut.value) {
+            const timeInDate = new Date(`2000-01-01T${timeIn.value}`);
+            const timeOutDate = new Date(`2000-01-01T${timeOut.value}`);
+            if (timeOutDate <= timeInDate) {
+                timeOut.classList.add('is-invalid');
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    function validateComments() {
+        let isValid = true;
+        document.querySelectorAll('.form-check-input').forEach(checkbox => {
+            if (!checkbox.checked) {
+                const textarea = checkbox.closest('.question-item').querySelector('textarea');
+                if (!textarea.value.trim()) {
+                    textarea.classList.add('is-invalid');
+                    isValid = false;
+                }
+            }
+        });
+        return isValid;
+    }
+    
+    function showConfirmModal() {
+        const modal = new bootstrap.Modal(document.getElementById('confirmSubmitModal'));
+        const storeName = document.querySelector('#store option:checked')?.text || 
+                        document.querySelector('.selected-store .fw-bold')?.textContent || 'Not selected';
+        
+        document.getElementById('modal-store-name').textContent = storeName;
+        document.getElementById('modal-visit-date').textContent = document.getElementById('id_visit_date').value;
+        document.getElementById('modal-completion').textContent = document.getElementById('completion-percentage').textContent;
+        document.getElementById('modal-action-items').textContent = document.getElementById('action-items').textContent;
+        
+        modal.show();
+    }
+    
+    // Form submission
+    form.addEventListener('submit', function(event) {
+        event.preventDefault();
+        
+        const isValid = validateRequiredFields() && validateTimeFields() && validateComments();
+        
+        if (isValid) {
+            showConfirmModal();
+        } else {
+            const firstError = document.querySelector('.is-invalid');
+            if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    });
+    
+    // Confirm submit
+    document.getElementById('confirm-submit').addEventListener('click', function() {
+        const actionInput = document.createElement('input');
+        actionInput.type = 'hidden';
+        actionInput.name = 'action';
+        actionInput.value = 'submit';
+        form.appendChild(actionInput);
+        form.submit();
+    });
+    
+    // Save draft
+    document.getElementById('save-draft-btn').addEventListener('click', function() {
+        const actionInput = document.createElement('input');
+        actionInput.type = 'hidden';
+        actionInput.name = 'action';
+        actionInput.value = 'draft';
+        form.appendChild(actionInput);
+        form.submit();
+    });
+    
+    // Back to top
+    const backToTop = document.getElementById('back-to-top');
+    window.addEventListener('scroll', function() {
+        backToTop.style.display = window.pageYOffset > 300 ? 'block' : 'none';
+    });
+    backToTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+    
+    // Progress bar
+    window.addEventListener('scroll', function() {
+        const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+        const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+        const scrolled = (winScroll / height) * 100;
+        document.getElementById('progress-bar').style.width = scrolled + '%';
+    });
+    
+    // Auto-expand first category
+    const firstCategory = document.querySelector('.category-header');
+    if (firstCategory) {
+        console.log('Auto-expanding first category');
+        toggleCategory(firstCategory);
+    }
+    
+    console.log('Checklist initialized:', { 
+        totalQuestions, 
+        fileInputs: document.querySelectorAll('.file-input').length,
+        fileNameElements: document.querySelectorAll('.file-name').length
+    });
+});
+</script>
+{% endblock %}

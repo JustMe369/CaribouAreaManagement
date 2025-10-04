@@ -1,0 +1,377 @@
+{% extends 'checklist/base.html' %}
+{% load static %}
+{% load checklist_tags %}
+
+{% block content %}
+<div class="container-fluid mt-4 history-container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="text-primary mb-1">
+                <i class="fas fa-history me-2"></i>Visit History
+            </h2>
+            <p class="text-muted mb-0">Complete audit trail of all store visits</p>
+        </div>
+        <div>
+            <a href="{% url 'checklist:export_history_excel' %}" class="btn btn-success">
+                <i class="fas fa-file-excel me-1"></i> Export to Excel
+            </a>
+            <a href="{% url 'checklist:dashboard' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+    
+    <div class="card shadow-lg border-0">
+        <div class="card-header bg-gradient-primary text-white py-3">
+            <div class="row align-items-center">
+                <div class="col">
+                    <h5 class="mb-0">
+                        <i class="fas fa-clipboard-list me-2"></i>Visit Records
+                    </h5>
+                </div>
+                <div class="col-auto">
+                    <span class="badge bg-light text-dark">{{ page_obj.paginator.count }} Total Visits</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover table-striped mb-0 visit-history-table">
+                    <thead class="table-dark">
+                        <tr>
+                            <th class="text-center" style="width: 5%;">
+                                <i class="fas fa-hashtag"></i>
+                            </th>
+                            <th style="width: 12%;">
+                                <i class="fas fa-calendar-alt me-1"></i>Visit Date
+                            </th>
+                            <th style="width: 18%;">
+                                <i class="fas fa-store me-1"></i>Store
+                            </th>
+                            <th style="width: 15%;">
+                                <i class="fas fa-user-tie me-1"></i>Visitor Name
+                            </th>
+                            <th class="text-center" style="width: 10%;">
+                                <i class="fas fa-sign-in-alt me-1"></i>Time In
+                            </th>
+                            <th class="text-center" style="width: 10%;">
+                                <i class="fas fa-sign-out-alt me-1"></i>Time Out
+                            </th>
+                            <th class="text-center" style="width: 10%;">
+                                <i class="fas fa-chart-line me-1"></i>Score
+                            </th>
+                            <th class="text-center" style="width: 20%;">
+                                <i class="fas fa-cog me-1"></i>Actions
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for visit in page_obj %}
+                        <tr class="align-middle visit-row">
+                            <td class="text-center fw-bold text-muted">
+                                {{ forloop.counter|add:page_obj.start_index|add:"-1" }}
+                            </td>
+                            <td>
+                                <div class="d-flex flex-column">
+                                    <span class="fw-bold">{{ visit.date|date:"M d, Y" }}</span>
+                                    <small class="text-muted">{{ visit.date|date:"l" }}</small>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="store-icon me-2">
+                                        <i class="fas fa-store-alt text-primary"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold">{{ visit.store.name }}</div>
+                                        {% if visit.store.area %}
+                                        <small class="text-muted">
+                                            <i class="fas fa-map-marker-alt me-1"></i>{{ visit.store.area.name }}
+                                        </small>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="visitor-avatar me-2">
+                                        <i class="fas fa-user-circle text-info"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold">{{ visit.manager.get_full_name|default:visit.manager.username }}</div>
+                                        <small class="text-muted">{{ visit.manager.email|truncatechars:25 }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                {% if visit.time_in %}
+                                <div class="time-badge badge-time-in">
+                                    <i class="fas fa-clock me-1"></i>{{ visit.time_in|time:"h:i A" }}
+                                </div>
+                                {% else %}
+                                <span class="text-muted">—</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                {% if visit.time_out %}
+                                <div class="time-badge badge-time-out">
+                                    <i class="fas fa-clock me-1"></i>{{ visit.time_out|time:"h:i A" }}
+                                </div>
+                                {% else %}
+                                <span class="badge bg-warning text-dark">
+                                    <i class="fas fa-hourglass-half me-1"></i>In Progress
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                {% if visit.overall_score >= 90 %}
+                                <span class="badge bg-success score-badge">
+                                    <i class="fas fa-star me-1"></i>{{ visit.overall_score }}%
+                                </span>
+                                {% elif visit.overall_score >= 75 %}
+                                <span class="badge bg-primary score-badge">
+                                    <i class="fas fa-check-circle me-1"></i>{{ visit.overall_score }}%
+                                </span>
+                                {% elif visit.overall_score >= 60 %}
+                                <span class="badge bg-warning score-badge">
+                                    <i class="fas fa-exclamation-circle me-1"></i>{{ visit.overall_score }}%
+                                </span>
+                                {% else %}
+                                <span class="badge bg-danger score-badge">
+                                    <i class="fas fa-times-circle me-1"></i>{{ visit.overall_score }}%
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                <fieldset class="btn-group">
+                                    <legend class="visually-hidden">Visit Actions</legend>
+                                    <a href="{% url 'checklist:checklist_detail' visit.id %}" 
+                                       class="btn btn-sm btn-outline-primary" 
+                                       title="View Details">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{% url 'checklist:print_visit_report' visit.id %}" 
+                                       class="btn btn-sm btn-outline-info" 
+                                       target="_blank"
+                                       title="Print Report">
+                                        <i class="fas fa-print"></i>
+                                    </a>
+                                </fieldset>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center py-5">
+                                <div class="text-muted">
+                                    <i class="fas fa-folder-open fa-3x mb-3"></i>
+                                    <p class="h5">No visit history found</p>
+                                    <p>Start by creating a new checklist visit</p>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        {% if page_obj.has_other_pages %}
+        <div class="card-footer bg-light">
+            <nav aria-label="Visit history pagination">
+                <ul class="pagination pagination-sm mb-0 justify-content-center">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1">
+                            <i class="fas fa-angle-double-left"></i>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}">
+                            <i class="fas fa-angle-left"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ num }}</span>
+                        </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}">
+                            <i class="fas fa-angle-right"></i>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">
+                            <i class="fas fa-angle-double-right"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    .history-container {
+        min-height: 80vh;
+        padding: 0 2rem;
+    }
+    
+    .bg-gradient-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    .visit-history-table {
+        font-size: 0.95rem;
+    }
+    
+    .visit-history-table thead th {
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 0.5px;
+        border-bottom: 2px solid #dee2e6;
+        padding: 1rem 0.75rem;
+        vertical-align: middle;
+    }
+    
+    .visit-history-table tbody td {
+        padding: 1rem 0.75rem;
+        vertical-align: middle;
+    }
+    
+    .visit-row {
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .visit-row:hover {
+        background-color: #f8f9fa !important;
+        transform: translateX(5px);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .store-icon, .visitor-avatar {
+        font-size: 1.5rem;
+    }
+    
+    .time-badge {
+        display: inline-block;
+        padding: 0.5rem 0.75rem;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
+    
+    .badge-time-in {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+    
+    .badge-time-out {
+        background-color: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffeaa7;
+    }
+    
+    .score-badge {
+        font-size: 1rem;
+        padding: 0.5rem 0.75rem;
+        font-weight: 700;
+    }
+    
+    .btn-group {
+        border: none;
+        padding: 0;
+        margin: 0;
+        display: inline-flex;
+    }
+    
+    .btn-group .btn {
+        margin: 0 2px;
+        transition: all 0.2s ease;
+    }
+    
+    .btn-group .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    
+    .card {
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    
+    .card-header {
+        border-bottom: none;
+    }
+    
+    .pagination .page-link {
+        color: #667eea;
+        border-radius: 6px;
+        margin: 0 3px;
+        transition: all 0.2s ease;
+    }
+    
+    .pagination .page-link:hover {
+        background-color: #667eea;
+        color: white;
+        transform: translateY(-2px);
+    }
+    
+    .pagination .page-item.active .page-link {
+        background-color: #667eea;
+        border-color: #667eea;
+    }
+    
+    @media (max-width: 1200px) {
+        .history-container {
+            padding: 0 1rem;
+        }
+        
+        .visit-history-table {
+            font-size: 0.85rem;
+        }
+        
+        .visitor-avatar, .store-icon {
+            font-size: 1.2rem;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .d-flex.justify-content-between {
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .visit-history-table thead th {
+            font-size: 0.75rem;
+            padding: 0.5rem;
+        }
+        
+        .visit-history-table tbody td {
+            padding: 0.5rem;
+            font-size: 0.8rem;
+        }
+        
+        .time-badge {
+            font-size: 0.7rem;
+            padding: 0.25rem 0.5rem;
+        }
+    }
+</style>
+{% endblock %}

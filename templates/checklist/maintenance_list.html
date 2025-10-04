@@ -1,0 +1,739 @@
+{% extends 'checklist/base.html' %}
+{% load static %}
+{% load checklist_tags %}
+
+{% block title %}Maintenance Dashboard - Caribou Coffee{% endblock %}
+
+{% block extra_head %}
+<link href="{% static 'checklist/css/dashboard.css' %}" rel="stylesheet">
+<style>
+body {
+    background-color: #f8f9fa;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.dashboard-container {
+    background: #ffffff;
+    min-height: 100vh;
+}
+
+.header-section {
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    color: white;
+    padding: 2rem 0;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.stats-overview {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem 0;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 10px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+    border-left: 4px solid;
+    transition: transform 0.2s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+}
+
+.stat-card.total { border-left-color: #3498db; }
+.stat-card.pending { border-left-color: #f39c12; }
+.stat-card.progress { border-left-color: #9b59b6; }
+.stat-card.completed { border-left-color: #27ae60; }
+.stat-card.overdue { border-left-color: #e74c3c; }
+.stat-card.priority { border-left-color: #e67e22; }
+
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    color: #7f8c8d;
+    font-weight: 500;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+}
+
+.chart-section {
+    background: white;
+    border-radius: 10px;
+    padding: 2rem;
+    margin: 2rem 0;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+}
+
+.filters-section {
+    background: white;
+    border-radius: 10px;
+    padding: 2rem;
+    margin: 2rem 0;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+}
+
+.tickets-section {
+    background: white;
+    border-radius: 10px;
+    padding: 2rem;
+    margin: 2rem 0;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+}
+
+.section-title {
+    color: #2c3e50;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-primary-custom {
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    color: white;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-primary-custom:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+    color: white;
+}
+
+.table-professional {
+    border: none;
+    background: white;
+}
+
+.table-professional thead th {
+    background: #f8f9fa;
+    border: none;
+    color: #2c3e50;
+    font-weight: 600;
+    padding: 1rem;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+}
+
+.table-professional tbody tr {
+    border: none;
+    transition: background-color 0.2s ease;
+}
+
+.table-professional tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+.table-professional tbody td {
+    padding: 1rem;
+    border-bottom: 1px solid #ecf0f1;
+    vertical-align: middle;
+    color: #2c3e50;
+}
+
+.ticket-id {
+    font-weight: 700;
+    color: #3498db;
+    font-size: 1.1rem;
+}
+
+.badge-custom {
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+}
+
+.badge-high { background: #e74c3c; color: white; }
+.badge-medium { background: #f39c12; color: white; }
+.badge-low { background: #27ae60; color: white; }
+.badge-pending { background: #f39c12; color: white; }
+.badge-progress { background: #9b59b6; color: white; }
+.badge-completed { background: #27ae60; color: white; }
+.badge-overdue { background: #e74c3c; color: white; }
+
+.action-btn {
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    margin: 0 0.2rem;
+    transition: all 0.2s ease;
+}
+
+.search-box {
+    position: relative;
+    max-width: 300px;
+}
+
+.search-box input {
+    padding-left: 2.5rem;
+    border-radius: 25px;
+    border: 2px solid #ecf0f1;
+}
+
+.search-box input:focus {
+    border-color: #3498db;
+    box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+}
+
+.search-box .search-icon {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #7f8c8d;
+}
+
+.progress-chart {
+    height: 300px;
+    position: relative;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: #7f8c8d;
+}
+
+.pagination-custom .page-link {
+    border: none;
+    color: #3498db;
+    padding: 0.75rem 1rem;
+    margin: 0 0.2rem;
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+.pagination-custom .page-link:hover {
+    background: #3498db;
+    color: white;
+}
+
+.pagination-custom .page-item.active .page-link {
+    background: #3498db;
+    color: white;
+}
+
+@media (max-width: 768px) {
+    .stats-overview {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .action-btn {
+        display: block;
+        margin: 0.2rem 0;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- Header Section -->
+    <div class="header-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="mb-2">
+                        <i class="fas fa-tools me-3"></i>
+                        Maintenance Dashboard
+                    </h1>
+                    <p class="mb-0 opacity-75">Comprehensive maintenance management for all Caribou Coffee locations</p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <a href="{% url 'checklist:dashboard' %}" class="btn btn-light me-2">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                    </a>
+                    <button type="button" class="btn-primary-custom" data-bs-toggle="modal" data-bs-target="#visitSelectModal">
+                        <i class="fas fa-plus"></i>
+                        New Ticket
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-fluid px-4">
+        <!-- Statistics Overview -->
+        <div class="stats-overview">
+            <div class="stat-card total">
+                <div class="d-flex align-items-center">
+                    <div class="me-3">
+                        <i class="fas fa-clipboard-list fa-2x text-primary"></i>
+                    </div>
+                    <div>
+                        <div class="stat-number">{{ stats.total|default:0 }}</div>
+                        <div class="stat-label">Total Tickets</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="stat-card pending">
+                <div class="d-flex align-items-center">
+                    <div class="me-3">
+                        <i class="fas fa-clock fa-2x text-warning"></i>
+                    </div>
+                    <div>
+                        <div class="stat-number">{{ stats.pending|default:0 }}</div>
+                        <div class="stat-label">Pending</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="stat-card progress1">
+                <div class="d-flex align-items-center">
+                    <div class="me-3">
+                        <i class="fas fa-cog fa-spin fa-2x text-info"></i><br>
+                    </div>
+                    <div>
+                        <div class="stat-number">{{ stats.in_progress|default:0 }}</div>
+                        <div class="stat-label">In Progress</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="stat-card completed">
+                <div class="d-flex align-items-center">
+                    <div class="me-3">
+                        <i class="fas fa-check-circle fa-2x text-success"></i>
+                    </div>
+                    <div>
+                        <div class="stat-number">{{ stats.completed|default:0 }}</div>
+                        <div class="stat-label">Completed</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="stat-card overdue">
+                <div class="d-flex align-items-center">
+                    <div class="me-3">
+                        <i class="fas fa-exclamation-triangle fa-2x text-danger"></i>
+                    </div>
+                    <div>
+                        <div class="stat-number">{{ stats.overdue|default:0 }}</div>
+                        <div class="stat-label">Overdue</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="stat-card priority">
+                <div class="d-flex align-items-center">
+                    <div class="me-3">
+                        <i class="fas fa-fire fa-2x text-danger"></i>
+                    </div>
+                    <div>
+                        <div class="stat-number">{{ stats.high_priority|default:0 }}</div>
+                        <div class="stat-label">High Priority</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="chart-section">
+                    <h5 class="section-title">
+                        <i class="fas fa-chart-pie text-primary"></i>
+                        Status Distribution
+                    </h5>
+                    <div class="progress-chart">
+                        <canvas id="statusChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="chart-section">
+                    <h5 class="section-title">
+                        <i class="fas fa-chart-line text-success"></i>
+                        Ticket Trends (Last 7 Days)
+                    </h5>
+                    <div class="progress-chart">
+                        <canvas id="trendChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters Section -->
+        <div class="filters-section">
+            <h5 class="section-title">
+                <i class="fas fa-filter text-primary"></i>
+                Filter Tickets
+            </h5>
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label for="status" class="form-label fw-semibold">Status</label>
+                    <select name="status" id="status" class="form-select">
+                        <option value="">All Statuses</option>
+                        <option value="pending" {% if filters.status == 'pending' %}selected{% endif %}>Pending</option>
+                        <option value="in_progress" {% if filters.status == 'in_progress' %}selected{% endif %}>In Progress</option>
+                        <option value="completed" {% if filters.status == 'completed' %}selected{% endif %}>Completed</option>
+                        <option value="overdue" {% if filters.status == 'overdue' %}selected{% endif %}>Overdue</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="priority" class="form-label fw-semibold">Priority</label>
+                    <select name="priority" id="priority" class="form-select">
+                        <option value="">All Priorities</option>
+                        <option value="high" {% if filters.priority == 'high' %}selected{% endif %}>High</option>
+                        <option value="medium" {% if filters.priority == 'medium' %}selected{% endif %}>Medium</option>
+                        <option value="low" {% if filters.priority == 'low' %}selected{% endif %}>Low</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="store" class="form-label fw-semibold">Store</label>
+                    <select name="store" id="store" class="form-select">
+                        <option value="">All Stores</option>
+                        {% for store in stores %}
+                        <option value="{{ store.id }}" {% if filters.store == store.id|stringformat:"s" %}selected{% endif %}>{{ store.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="date_range" class="form-label fw-semibold">Date Range</label>
+                    <select name="date_range" id="date_range" class="form-select">
+                        <option value="">All Time</option>
+                        <option value="today" {% if filters.date_range == 'today' %}selected{% endif %}>Today</option>
+                        <option value="this_week" {% if filters.date_range == 'this_week' %}selected{% endif %}>This Week</option>
+                        <option value="this_month" {% if filters.date_range == 'this_month' %}selected{% endif %}>This Month</option>
+                    </select>
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="fas fa-search me-2"></i>Apply Filters
+                    </button>
+                    <a href="{% url 'checklist:maintenance_list' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-undo me-2"></i>Reset
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Tickets Table Section -->
+        <div class="tickets-section">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="section-title mb-0">
+                    <i class="fas fa-list text-primary"></i>
+                    Maintenance Tickets
+                    {% if page_obj %}
+                    <span class="badge bg-primary ms-2">{{ page_obj.paginator.count }}</span>
+                    {% endif %}
+                </h5>
+                <div class="d-flex align-items-center gap-3">
+                    <div class="search-box">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" class="form-control" placeholder="Search tickets..." id="ticketSearch">
+                    </div>
+                    <div class="dropdown">
+                        <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-download me-2"></i>Export
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-file-excel me-2"></i>Excel</a></li>
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-file-pdf me-2"></i>PDF</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            {% if page_obj %}
+            <div class="table-responsive">
+                <table class="table table-professional">
+                    <thead>
+                        <tr>
+                            <th>Ticket ID</th>
+                            <th>Store</th>
+                            <th>Equipment</th>
+                            <th>Issue</th>
+                            <th>Priority</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                            <th>Due Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ticket in page_obj %}
+                        <tr>
+                            <td>
+                                <span class="ticket-id">#{{ ticket.id }}</span>
+                            </td>
+                            <td>
+                                <strong>{{ ticket.visit.store.name }}</strong>
+                            </td>
+                            <td>{{ ticket.equipment }}</td>
+                            <td>
+                                <div style="max-width: 200px;" title="{{ ticket.issue_description }}">
+                                    {{ ticket.issue_description|truncatewords:6 }}
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge-custom badge-{{ ticket.priority }}">{{ ticket.get_priority_display }}</span>
+                            </td>
+                            <td>
+                                <span class="badge-custom badge-{{ ticket.status }}">{{ ticket.get_status_display }}</span>
+                            </td>
+                            <td>{{ ticket.created_date|date:"M d, Y" }}</td>
+                            <td>
+                                {% if ticket.is_overdue %}
+                                    <span class="text-danger fw-bold">
+                                        <i class="fas fa-exclamation-triangle me-1"></i>
+                                        {{ ticket.due_date|date:"M d, Y" }}
+                                    </span>
+                                {% else %}
+                                    {{ ticket.due_date|date:"M d, Y" }}
+                                {% endif %}
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary action-btn view-ticket" data-ticket-id="{{ ticket.id }}">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <a href="{% url 'checklist:edit_maintenance' ticket.id %}" class="btn btn-sm btn-outline-warning action-btn">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <button class="btn btn-sm btn-outline-danger action-btn delete-ticket" data-ticket-id="{{ ticket.id }}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            {% if page_obj.has_other_pages %}
+            <nav class="mt-4">
+                <ul class="pagination pagination-custom justify-content-center">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ num }}</span>
+                        </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+            
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-tools fa-4x mb-3"></i>
+                <h4>No Maintenance Tickets Found</h4>
+                <p class="mb-4">Create your first maintenance ticket to get started</p>
+                <button type="button" class="btn-primary-custom" data-bs-toggle="modal" data-bs-target="#visitSelectModal">
+                    <i class="fas fa-plus"></i>
+                    Create New Ticket
+                </button>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modals -->
+<div class="modal fade" id="visitSelectModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Select Visit</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                {% if visits %}
+                <select id="visitSelector" class="form-select">
+                    <option selected disabled>Choose a visit...</option>
+                    {% for visit in visits %}
+                    <option value="{{ visit.id }}">{{ visit.store.name }} - {{ visit.date|date:"M d, Y" }}</option>
+                    {% endfor %}
+                </select>
+                {% else %}
+                <div class="alert alert-warning">
+                    No visits available. Create a store visit first.
+                </div>
+                {% endif %}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                {% if visits %}
+                <button type="button" class="btn btn-primary" id="createTicketBtn">Create Ticket</button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-danger">Confirm Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this ticket?</p>
+                <p><strong>Ticket ID: <span id="deleteTicketId"></span></strong></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Chart data
+    const stats = {
+        pending: {{ stats.pending|default:0 }},
+        in_progress: {{ stats.in_progress|default:0 }},
+        completed: {{ stats.completed|default:0 }},
+        overdue: {{ stats.overdue|default:0 }}
+    };
+
+    // Status Chart
+    const statusCtx = document.getElementById('statusChart');
+    if (statusCtx) {
+        new Chart(statusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Pending', 'In Progress', 'Completed', 'Overdue'],
+                datasets: [{
+                    data: [stats.pending, stats.in_progress, stats.completed, stats.overdue],
+                    backgroundColor: ['#f39c12', '#9b59b6', '#27ae60', '#e74c3c'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    }
+
+    // Trend Chart
+    const trendCtx = document.getElementById('trendChart');
+    if (trendCtx) {
+        const last7Days = [];
+        const counts = [];
+        
+        for (let i = 6; i >= 0; i--) {
+            const date = new Date();
+            date.setDate(date.getDate() - i);
+            last7Days.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+            counts.push(Math.floor(Math.random() * 10)); // Replace with real data
+        }
+
+        new Chart(trendCtx, {
+            type: 'line',
+            data: {
+                labels: last7Days,
+                datasets: [{
+                    label: 'New Tickets',
+                    data: counts,
+                    borderColor: '#3498db',
+                    backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // Event handlers
+    document.getElementById('createTicketBtn')?.addEventListener('click', function() {
+        const visitId = document.getElementById('visitSelector').value;
+        if (visitId) {
+            window.location.href = `{% url 'checklist:new_maintenance_with_visit' 0 %}`.replace('0', visitId);
+        }
+    });
+
+    document.querySelectorAll('.view-ticket').forEach(btn => {
+        btn.addEventListener('click', function() {
+            window.location.href = `/checklist/maintenance/${this.dataset.ticketId}/`;
+        });
+    });
+
+    document.querySelectorAll('.delete-ticket').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.getElementById('deleteTicketId').textContent = this.dataset.ticketId;
+            new bootstrap.Modal(document.getElementById('deleteConfirmModal')).show();
+        });
+    });
+
+    // Search functionality
+    document.getElementById('ticketSearch')?.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        document.querySelectorAll('tbody tr').forEach(row => {
+            const text = row.textContent.toLowerCase();
+            row.style.display = text.includes(searchTerm) ? '' : 'none';
+        });
+    });
+});
+</script>
+{% endblock %}

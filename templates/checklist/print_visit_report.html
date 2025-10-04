@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Print Visit Report</title>
+    <style>
+        body {
+            font-family: sans-serif;
+        }
+        .container {
+            width: 90%;
+            margin: 0 auto;
+        }
+        h1, h2, h3 {
+            text-align: center;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Visit Report</h1>
+        <h2>{{ visit.store.name }}</h2>
+        <h3>{{ visit.date|date:"F d, Y" }}</h3>
+
+        <table>
+            <tr>
+                <th>Manager</th>
+                <td>{{ visit.manager.get_full_name|default:visit.manager.username }}</td>
+            </tr>
+            <tr>
+                <th>Score</th>
+                <td>{{ visit.calculate_score }}%</td>
+            </tr>
+        </table>
+
+        <h3>Checklist Details</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Category</th>
+                    <th>Question</th>
+                    <th>Answer</th>
+                    <th>Comment</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in visit.checklist_items.all %}
+                    <tr>
+                        <td>{{ item.question.category.name }}</td>
+                        <td>{{ item.question.text }}</td>
+                        <td>{% if item.answer %}Yes{% else %}No{% endif %}</td>
+                        <td>{{ item.comment }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

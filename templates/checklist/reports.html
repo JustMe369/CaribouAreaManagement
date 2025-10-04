@@ -1,0 +1,62 @@
+{% extends 'checklist/base.html' %}
+{% block title %}Reports | Caribou Area Manager{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="row mb-4">
+    <div class="col">
+      <h2><i class="fas fa-chart-bar me-2"></i>Reports</h2>
+      <p class="text-muted">Key metrics for visits, actions, maintenance, and stores.</p>
+    </div>
+  </div>
+  <div class="row g-3">
+    <div class="col-md-3">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h6 class="text-muted">Total Visits</h6>
+          <div class="fs-3 fw-bold">{{ visits_count }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h6 class="text-muted">Visits (30 days)</h6>
+          <div class="fs-3 fw-bold">{{ visits_30 }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h6 class="text-muted">Open Action Items</h6>
+          <div class="fs-3 fw-bold">{{ open_actions }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h6 class="text-muted">Active Stores</h6>
+          <div class="fs-3 fw-bold">{{ stores }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h6 class="text-muted">Pending Tickets</h6>
+          <div class="fs-3 fw-bold">{{ pending_tickets }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h6 class="text-muted">In-progress Tickets</h6>
+          <div class="fs-3 fw-bold">{{ in_progress_tickets }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

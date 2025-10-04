@@ -1,0 +1,67 @@
+{% extends "admin/change_list.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Analytics Dashboard -->
+        <div class="col-md-12">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">Store Analytics Dashboard</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Store Stats -->
+                        <div class="col-md-3">
+                            <div class="card text-white bg-success mb-3">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ cl.result_count }}</h5>
+                                    <p class="card-text">Total Stores</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Active Stores -->
+                        <div class="col-md-3">
+                            <div class="card text-white bg-info mb-3">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ active_stores }}</h5>
+                                    <p class="card-text">Active Stores</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Compliance Rate -->
+                        <div class="col-md-3">
+                            <div class="card text-white bg-warning mb-3">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ avg_compliance }}%</h5>
+                                    <p class="card-text">Avg Compliance</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Open Actions -->
+                        <div class="col-md-3">
+                            <div class="card text-white bg-danger mb-3">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ open_actions }}</h5>
+                                    <p class="card-text">Open Actions</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {{ block.super }}
+</div>
+{% endblock %}
+
+{% block extrahead %}
+{{ block.super }}
+<script src="{% static 'admin/js/store_management.js' %}"></script>
+{% endblock %}

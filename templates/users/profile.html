@@ -1,0 +1,60 @@
+{% extends 'checklist/base.html' %}
+{% block content %}
+<div class="container my-5">
+    <div class="card shadow-lg">
+        <div class="card-header bg-primary text-white">
+            <h3 class="mb-0">User Profile</h3>
+        </div>
+        
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4 border-end">
+                    <h4 class="text-muted mb-4">Personal Details</h4>
+                    <dl class="row">
+                        <dt class="col-sm-5">Username:</dt>
+                        <dd class="col-sm-7">{{ profile.user.username }}</dd>
+                        
+                        <dt class="col-sm-5">Email:</dt>
+                        <dd class="col-sm-7">{{ profile.user.email }}</dd>
+                        
+                        <dt class="col-sm-5">Last Login:</dt>
+                        <dd class="col-sm-7">{{ profile.user.last_login|date:'M d, Y H:i' }}</dd>
+                    </dl>
+                </div>
+                
+                <div class="col-md-8">
+                    <div class="mb-4">
+                        <h4 class="text-muted mb-4">Role Information</h4>
+                        <div class="alert alert-{{ profile.role_class }} py-3">
+                            <h5 class="alert-heading mb-3">
+                                <i class="fas fa-id-badge me-2"></i>
+                                {{ profile.get_role_display }}
+                            </h5>
+                        </div>
+                    </div>
+                    
+                    <div class="stores-section">
+                        <h4 class="text-muted mb-4">Assigned Stores</h4>
+                        {% if stores %}
+                        <div class="list-group">
+                            {% for store in stores %}
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="fw-medium">{{ store.name }}</span>
+                                    <small class="text-muted">{{ store.location }}</small>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="alert alert-info">
+                            No stores currently assigned
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

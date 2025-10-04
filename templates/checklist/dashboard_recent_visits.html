@@ -1,0 +1,41 @@
+<div class="col-lg-6">
+    <div class="chart-container">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4><i class="fas fa-history"></i> Recent Visits</h4>
+            <a href="{% url 'checklist:checklist_history' %}" class="btn-primary-custom btn-sm">
+                <i class="fas fa-eye"></i> View All
+            </a>
+        </div>
+        {% for visit in recent_visits %}
+        <div class="visit-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="mb-1">{{ visit.store.name }}</h6>
+                    <p class="mb-0 text-muted">
+                        <i class="fas fa-calendar"></i> {{ visit.date|date:"M j, Y" }} | 
+                        <i class="fas fa-clock"></i> {{ visit.time|time:"g:i A" }}
+                    </p>
+                    <small class="text-muted">
+                        <i class="fas fa-user"></i> {{ visit.manager.get_full_name|default:visit.manager.username }}
+                    </small>
+                </div>
+                <div class="text-end">
+                    <span class="badge bg-success">{{ visit.calculate_score|default:0 }}%</span>
+                    <br>
+                    <a href="{% url 'checklist:checklist_detail' visit.id %}" class="btn-primary-custom btn-sm mt-1">
+                        <i class="fas fa-eye"></i> View
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="text-center text-muted py-4">
+            <i class="fas fa-clipboard-list fa-2x mb-2"></i>
+            <p>No recent visits found</p>
+            <a href="{% url 'checklist:new_checklist' %}" class="btn-primary-custom">
+                <i class="fas fa-plus"></i> Create New Checklist
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</div>

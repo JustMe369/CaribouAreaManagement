@@ -1,0 +1,16 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+<h1>Add Users to {{ area.name }}</h1>
+<form method="post">
+    {% csrf_token %}
+    <div style="margin-bottom: 20px;">
+        {% for user in users %}
+        <div>
+            <input type="checkbox" name="users" value="{{ user.id }}" id="user_{{ user.id }}">
+            <label for="user_{{ user.id }}">{{ user.username }}</label>
+        </div>
+        {% endfor %}
+    </div>
+    <button type="submit" class="button">Add Selected Users</button>
+</form>
+{% endblock %}

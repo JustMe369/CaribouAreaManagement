@@ -1,0 +1,24 @@
+{% extends 'checklist/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Edit Checklist Question{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1>Edit Checklist Question</h1>
+
+    <div class="card mt-4">
+        <div class="card-header">
+            <h2>Question Details</h2>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                {{ form|crispy }}
+                <button type="submit" class="btn btn-primary mt-3">Save Changes</button>
+                <a href="{% url 'checklist:manage_checklist_questions' %}" class="btn btn-secondary mt-3">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

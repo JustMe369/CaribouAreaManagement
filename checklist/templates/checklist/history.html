@@ -1,0 +1,238 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="fas fa-history"></i> Visit History</h1>
+        <div>
+            <a href="{% url 'checklist:dashboard' %}" class="btn btn-primary">
+                <i class="fas fa-tachometer-alt"></i> Dashboard
+            </a>
+            <button class="btn btn-info ms-2" data-bs-toggle="modal" data-bs-target="#filterModal">
+                <i class="fas fa-filter"></i> Filters
+            </button>
+        </div>
+    </div>
+
+    <!-- Filter Modal -->
+    <div class="modal fade" id="filterModal" tabindex="-1" aria-labelledby="filterModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="filterModalLabel">Filter Options</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="historyFilters">
+                        <div class="mb-3">
+                            <label class="form-label">Date Range</label>
+                            <div class="input-group">
+                                <input type="date" class="form-control" name="start_date">
+                                <span class="input-group-text">to</span>
+                                <input type="date" class="form-control" name="end_date">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Score Range</label>
+                            <div class="input-group">
+                                <input type="number" min="0" max="100" class="form-control" placeholder="Min" name="min_score">
+                                <span class="input-group-text">to</span>
+                                <input type="number" min="0" max="100" class="form-control" placeholder="Max" name="max_score">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Store</label>
+                            <select class="form-select" name="store">
+                                <option value="">All Stores</option>
+                                {% for store in stores %}
+                                    <option value="{{ store.id }}">{{ store.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="applyFilters">Apply</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Total Visits</h5>
+                    <p class="card-text display-6">{{ total_visits }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Avg Score</h5>
+                    <p class="card-text display-6">{{ avg_score|default:"N/A" }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark">
+                <div class="card-body">
+                    <h5 class="card-title">Actions Needed</h5>
+                    <p class="card-text display-6">{{ actions_needed }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Best Score</h5>
+                    <p class="card-text display-6">{{ best_score|default:"N/A" }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- History Table -->
+    <div class="card shadow">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover" id="historyTable">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Date</th>
+                            <th>Store</th>
+                            <th>Score</th>
+                            <th>Grade</th>
+                            <th>Actions</th>
+                            <th>Details</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for visit in visits %}
+                            <tr>
+                                <td>{{ visit.date|date:"M d, Y" }}</td>
+                                <td>{{ visit.store.name }}</td>
+                                <td>
+                                    <div class="progress">
+                                        <div class="progress-bar bg-{{ visit.score_color }}" 
+                                             role="progressbar" 
+                                             style="width: {{ visit.overall_score }}%" 
+                                             aria-valuenow="{{ visit.overall_score }}" 
+                                             aria-valuemin="0" 
+                                             aria-valuemax="100">
+                                            {{ visit.overall_score }}%
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-{{ visit.score_color }}">
+                                        {{ visit.score_letter_grade }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="{% url 'checklist:checklist_detail' visit.id %}" 
+                                       class="btn btn-sm btn-outline-primary"
+                                       title="View Details">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{% url 'checklist:action_plan' %}?visit_id={{ visit.id }}" 
+                                       class="btn btn-sm btn-outline-warning ms-1"
+                                       title="Action Items">
+                                        <i class="fas fa-tasks"></i>
+                                    </a>
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-link" 
+                                            data-bs-toggle="collapse" 
+                                            data-bs-target="#notes{{ visit.id }}">
+                                        Show Notes <i class="fas fa-chevron-down"></i>
+                                    </button>
+                                    <div class="collapse" id="notes{{ visit.id }}">
+                                        <div class="card card-body mt-2">
+                                            <strong>General Notes:</strong>
+                                            <p>{{ visit.general_notes|default:"No notes" }}</p>
+                                            {% if visit.maintenance_needed %}
+                                                <strong>Maintenance:</strong>
+                                                <p>{{ visit.maintenance_needed }}</p>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center">No visits found</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if page_obj.has_other_pages %}
+                <nav aria-label="Page navigation" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">Previous</span>
+                            </li>
+                        {% endif %}
+
+                        {% for num in page_obj.paginator.page_range %}
+                            {% if page_obj.number == num %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ num }}</span>
+                                </li>
+                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">Next</span>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for dynamic features -->
+<script>
+$(document).ready(function() {
+    // Apply filters
+    $('#applyFilters').click(function() {
+        const formData = $('#historyFilters').serialize();
+        window.location.href = '?' + formData;
+    });
+
+    // Initialize DataTable
+    $('#historyTable').DataTable({
+        responsive: true,
+        order: [[0, 'desc']],
+        dom: '<"top"f>rt<"bottom"lip><"clear">',
+        language: {
+            search: "_INPUT_",
+            searchPlaceholder: "Search history..."
+        }
+    });
+});
+</script>
+{% endblock %}

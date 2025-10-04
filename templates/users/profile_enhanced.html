@@ -1,0 +1,96 @@
+{% extends 'checklist/base.html' %}
+{% block title %}My Profile | Caribou Area Manager{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="row mb-4">
+    <div class="col">
+      <h2><i class="fas fa-user-circle me-2"></i>My Profile</h2>
+      <p class="text-muted">Manage your account and access.</p>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-md-4">
+      <div class="card shadow-sm h-100">
+        <div class="card-body">
+          <h6 class="text-muted">Account</h6>
+          <div class="fw-bold">{{ request.user.get_full_name|default:request.user.username }}</div>
+          <div class="text-muted small">{{ request.user.email|default:"No email set" }}</div>
+          <hr>
+          <div>
+            <span class="badge bg-primary">Role: {{ profile.get_role_display }}</span>
+          </div>
+          <div class="mt-2">
+            <a class="btn btn-outline-secondary btn-sm" href="{% url 'password_change' %}">
+              <i class="fas fa-key me-1"></i> Change Password
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card shadow-sm h-100">
+        <div class="card-body">
+          <h6 class="text-muted">Stores Access</h6>
+          {% if profile.stores.all %}
+            <ul class="list-unstyled mb-0">
+              {% for store in profile.stores.all %}
+                <li class="mb-1"><i class="fas fa-store me-1 text-secondary"></i> {{ store.name }}</li>
+              {% empty %}
+                <li class="text-muted">No stores assigned.</li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <div class="text-muted">No stores assigned.</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card shadow-sm h-100">
+        <div class="card-body">
+          <h6 class="text-muted">Areas Access</h6>
+          {% if profile.areas.all %}
+            <ul class="list-unstyled mb-0">
+              {% for area in profile.areas.all %}
+                <li class="mb-1"><i class="fas fa-map-marker-alt me-1 text-secondary"></i> {{ area.name }}</li>
+              {% empty %}
+                <li class="text-muted">No areas assigned.</li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <div class="text-muted">No areas assigned.</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3 mt-2">
+    <div class="col-md-6">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h6 class="text-muted">Recent Activity</h6>
+          <ul class="mb-0 small text-muted">
+            <li>Last login: {{ request.user.last_login|default:"N/A" }}</li>
+            <li>Member since: {{ request.user.date_joined }}</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h6 class="text-muted">Quick Links</h6>
+          <div class="d-flex gap-2 flex-wrap">
+            <a href="{% url 'checklist:dashboard' %}" class="btn btn-outline-primary btn-sm"><i class="fas fa-tachometer-alt me-1"></i> Dashboard</a>
+            <a href="{% url 'checklist:new_checklist' %}" class="btn btn-outline-primary btn-sm"><i class="fas fa-clipboard-check me-1"></i> New Visit</a>
+            <a href="{% url 'checklist:checklist_history' %}" class="btn btn-outline-primary btn-sm"><i class="fas fa-history me-1"></i> History</a>
+            <a href="{% url 'checklist:reports' %}" class="btn btn-outline-primary btn-sm"><i class="fas fa-chart-bar me-1"></i> Reports</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

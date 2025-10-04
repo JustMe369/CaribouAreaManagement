@@ -1,0 +1,579 @@
+/* General Body Styling */
+body {
+    background: linear-gradient(-45deg, #0a192f, #1e3a8a, #172a45, #00008b);
+    background-size: 400% 400%;
+    animation: gradientBG 15s ease infinite;
+    color: #e6f1ff;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.new-checklist-container {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 20px;
+    animation: fadeIn 1s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Header Section */
+.header-section {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.main-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #64ffda;
+    text-shadow: 0 0 10px rgba(100, 255, 218, 0.5);
+}
+
+.subtitle {
+    font-size: 1.1rem;
+    color: #8892b0;
+    margin-top: 10px;
+}
+
+/* Summary Card */
+.summary-card {
+    background: rgba(10, 25, 47, 0.9);
+    border: 1px solid rgba(100, 255, 218, 0.3);
+    border-radius: 12px;
+    margin-bottom: 30px;
+}
+
+.summary-stats {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    gap: 15px;
+    padding: 15px 0;
+}
+
+.summary-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 15px;
+    min-width: 120px;
+    border-radius: 8px;
+    background: rgba(100, 255, 218, 0.1);
+    transition: transform 0.3s ease, background-color 0.3s ease;
+}
+
+.summary-stat:hover {
+    transform: translateY(-5px);
+    background: rgba(100, 255, 218, 0.2);
+}
+
+.summary-stat i {
+    font-size: 2rem;
+    color: #64ffda;
+    margin-bottom: 10px;
+}
+
+.summary-stat span:first-of-type {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #e6f1ff;
+}
+
+.summary-stat span:last-of-type {
+    font-size: 0.9rem;
+    color: #8892b0;
+    margin-top: 5px;
+}
+
+/* Form Grid for Visit Details */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+/* Glassmorphism Card Style */
+.form-card, .category-card {
+    background: rgba(10, 25, 47, 0.85);
+    border: 1px solid rgba(100, 255, 218, 0.2);
+    border-radius: 12px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-card:hover, .category-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.5);
+}
+
+.form-card-header, .category-header {
+    padding: 15px 20px;
+    border-bottom: 1px solid rgba(100, 255, 218, 0.2);
+}
+
+.form-card-header h2, .category-header h3 {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #ccd6f6;
+    margin: 0;
+}
+
+.form-card-body {
+    padding: 10px;
+}
+
+/* Time Fields Layout */
+.time-fields {
+    display: flex;
+    gap: 20px;
+}
+
+.time-fields > div {
+    flex: 1;
+}
+
+/* Modern Category Header */
+.modern-header {
+    width: 100%;
+    background: linear-gradient(135deg, rgba(10, 25, 47, 0.9), rgba(30, 58, 138, 0.7));
+    border: 1px solid rgba(100, 255, 218, 0.3);
+    border-radius: 12px;
+    padding: 18px 24px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modern-header:hover {
+    transform: translateY(-3px);
+    border-color: #64ffda;
+    box-shadow: 0 8px 25px rgba(100, 255, 218, 0.2);
+    background: linear-gradient(135deg, rgba(30, 58, 138, 0.8), rgba(10, 25, 47, 0.9));
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.icon-container {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #64ffda, #52d3b4);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.modern-header:hover .icon-container {
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(100, 255, 218, 0.4);
+}
+
+.category-icon {
+    color: #0a192f;
+    font-size: 1.1rem;
+    font-weight: 600;
+    transition: transform 0.3s ease;
+}
+
+.category-name {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #e6f1ff;
+    margin: 0;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+}
+
+.progress-badge {
+    background: rgba(100, 255, 218, 0.15);
+    border: 1px solid rgba(100, 255, 218, 0.3);
+    border-radius: 20px;
+    padding: 8px 16px;
+    transition: all 0.3s ease;
+}
+
+.modern-header:hover .progress-badge {
+    background: rgba(100, 255, 218, 0.25);
+    border-color: #64ffda;
+}
+
+.category-progress {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #64ffda;
+}
+
+.modern-header.open .category-icon {
+    transform: rotate(180deg);
+}
+
+.modern-header.open .icon-container {
+    background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+}
+
+/* Legacy category header styles for compatibility */
+.category-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+}
+
+.category-header i {
+    transition: transform 0.3s ease;
+}
+
+.category-content {
+    max-height: none !important;
+    overflow: visible;
+    display: block;
+}
+
+.category-header.open i {
+    transform: rotate(180deg);
+}
+
+/* Question Styling */
+.question-item {
+    padding: 15px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.question-item:last-child {
+    border-bottom: none;
+}
+
+.question-text {
+    font-size: 1.1rem;
+    font-weight: 500;
+    margin-bottom: 15px;
+}
+
+.question-options {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 15px;
+}
+
+/* Custom Radio Buttons */
+.question-options .option {
+    display: flex;
+    align-items: center;
+}
+
+.question-options input[type="radio"] {
+    opacity: 0;
+    position: fixed;
+    width: 0;
+}
+
+.question-options label {
+    display: inline-block;
+    padding: 8px 16px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.question-options input[type="radio"]:checked + label {
+    background-color: #64ffda;
+    color: #0a192f;
+    font-weight: 600;
+}
+
+/* Form Input Styling */
+.textinput, .form-control, select, input[type="date"], input[type="time"] {
+    background-color: rgba(10, 25, 47, 0.9) !important;
+    color: #e6f1ff !important;
+    border: 1px solid rgba(100, 255, 218, 0.3) !important;
+    border-radius: 8px !important;
+}
+
+.textinput:focus, .form-control:focus, select:focus, input[type="date"]:focus, input[type="time"]:focus {
+    box-shadow: 0 0 0 3px rgba(100, 255, 218, 0.5) !important;
+    border-color: #64ffda !important;
+}
+
+/* Submission Section */
+.submission-section {
+    text-align: center;
+    margin-top: 40px;
+}
+
+.submit-btn {
+    background: #64ffda;
+    color: #0a192f;
+    border: none;
+    border-radius: 8px;
+    padding: 15px 30px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.submit-btn:hover {
+    background-color: #52d3b4;
+    transform: scale(1.05);
+}
+
+.submit-btn .btn-text {
+    transition: transform 0.3s ease;
+}
+
+.submit-btn:hover .btn-text {
+    transform: translateX(-5px);
+}
+
+.submit-btn i {
+    transition: transform 0.3s ease;
+}
+
+.submit-btn:hover i {
+    transform: translateX(5px);
+}
+
+.required-field::after {
+    content: " *";
+    color: #ff6b6b;
+}
+
+.store-selector {
+    border: 1px solid rgba(100, 255, 218, 0.3);
+    border-radius: 8px;
+    padding: 1.5rem;
+    background-color: rgba(10, 25, 47, 0.85);
+}
+
+.image-preview {
+    max-width: 150px;
+    max-height: 150px;
+    margin-top: 10px;
+    border: 2px dashed rgba(100, 255, 218, 0.3);
+    padding: 5px;
+    display: none;
+    border-radius: 4px;
+}
+
+.file-input-wrapper {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.file-input-wrapper input[type=file] {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0,0,0,0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.file-input-wrapper .btn-file {
+    background-color: #64ffda;
+    color: #0a192f;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.file-input-wrapper .btn-file:hover {
+    background-color: #52d3b4;
+}
+
+.file-name {
+    margin-left: 10px;
+    font-style: italic;
+    color: #aaa;
+}
+
+.checklist-container {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 15px;
+}
+
+.category-card {
+    background-color: rgba(0, 70, 103, 0.327);
+    border: 1px solid rgba(100, 255, 218, 0.2);
+    border-radius: 8px;
+    padding: 20px;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    font-weight: 700;
+}
+
+.category-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+}
+
+.checklist-items {
+    list-style-type: none;
+    padding: 0;
+}
+
+.checklist-item {
+    margin-bottom: 15px;
+}
+textarea {
+    color: #e6f1ff !important;
+    background-color: #0a192f !important;
+}
+
+#back-to-top {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    display: none;
+    background-color: #64ffda;
+    color: #0a192f;
+    border: none;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    font-size: 20px;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    transition: background-color 0.3s, transform 0.3s;
+}
+
+#back-to-top:hover {
+    background-color: #52d3b4;
+    transform: scale(1.1);
+}
+.time-input-group {
+    border-radius: 0.375rem;
+    overflow: hidden;
+    box-shadow: 0 0.075rem 0.15rem rgba(0,0,0,0.075);
+    margin-top: 0.25rem;
+}
+.time-input-group .input-group-text {
+    padding: 0.5rem 0.75rem;
+}
+.time-input-group .form-control {
+    padding: 0.5rem;
+    height: calc(1.5em + 0.75rem + 2px);
+}
+
+.visit-time-section {
+    background-color: rgba(10, 25, 47, 0.8);
+    border: 1px solid rgba(100, 255, 218, 0.2);
+}
+
+.visit-time-section h3 {
+    color: #ccd6f6;
+    font-weight: 600;
+}
+
+.accordion-button:not(.collapsed) {
+    background-color: #64ffda;
+    color: #0a192f;
+}
+
+.question-item {
+    transition: all 0.3s ease;
+}
+
+.question-item:hover {
+     /* 1. Background: Use a very light, almost opaque background for a soft glow */
+    background-color: rgba(100, 255, 218, 0.15); /* Reduced opacity for subtlety */
+    
+    /* 2. Border: Keep the sharp border highlight for focus */
+    border: 1px solid #64ffda; 
+    
+    /* 3. Elevation: Use transform to slightly lift the item */
+    transform: translateY(-3px);
+    
+    /* 4. Shadow: Use a complex shadow for a deep, sculpted lift */
+    box-shadow: 
+        /* Main shadow matching the highlight color */
+        0 8px 25px rgba(100, 255, 218, 0.5), 
+        /* Darker shadow below for extra depth/lift */
+        0 4px 10px rgba(0, 0, 0, 0.15),
+        /* Fine, light shadow for a crisp edge highlight (optional) */
+        0 0 1px rgba(255, 255, 255, 0.6); 
+
+    /* 5. Pointer: Indicates clickability */
+    cursor: pointer;
+}
+
+.border-danger {
+    animation: shake 0.5s;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-5px); }
+    40%, 80% { transform: translateX(5px); }
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .time-fields {
+    flex-direction: column;
+  }
+}
+
+/* Enhanced focus states */
+.form-control:focus {
+  box-shadow: 0 0 0 3px rgba(100, 255, 218, 0.7);
+}
+
+/* Animated Background */
+@keyframes gradientBG {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* Progress Indicator */
+.progress-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 5px;
+    background: rgba(100, 255, 218, 0.1);
+    z-index: 1000;
+}
+
+.progress-bar {
+    height: 100%;
+    background: #64ffda;
+    width: 0%;
+    transition: width 0.4s ease;
+}

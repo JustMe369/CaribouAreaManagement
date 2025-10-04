@@ -1,0 +1,27 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls static admin_modify %}
+
+{% block extrahead %}
+{{ block.super }}
+<script src="{% url 'admin:jsi18n' %}"></script>
+{{ media }}
+{% endblock %}
+
+{% block content %}
+<div id="content-main">
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div>
+            <fieldset class="module aligned">
+                <h2>{% trans 'Import Checklist Questions' %}</h2>
+                {{ form.as_p }}
+            </fieldset>
+            
+            <div class="submit-row">
+                <input type="submit" value="{% trans 'Import' %}" class="default" name="_save">
+                <a href="{% url opts|admin_urlname:'changelist' %}" class="button cancel-link">{% trans 'Cancel' %}</a>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

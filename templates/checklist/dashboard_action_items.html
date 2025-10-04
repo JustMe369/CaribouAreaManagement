@@ -1,0 +1,39 @@
+<div class="col-lg-6">
+    <div class="chart-container">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4><i class="fas fa-exclamation-triangle"></i> Open Action Items</h4>
+            <a href="{% url 'checklist:action_plan' %}" class="btn-primary-custom btn-sm">
+                <i class="fas fa-tasks"></i> View All
+            </a>
+        </div>
+        {% for action in open_actions %}
+        <div class="action-item {{ action.priority }}-priority">
+            <div class="d-flex justify-content-between align-items-start">
+                <div class="flex-grow-1">
+                    <h6 class="mb-1">{{ action.what|truncatechars:60 }}</h6>
+                    <p class="mb-1 text-muted">
+                        <i class="fas fa-store"></i> {{ action.visit.store.name }} | 
+                        <i class="fas fa-user"></i> {{ action.who }}
+                    </p>
+                    <small class="text-muted">
+                        <i class="fas fa-calendar"></i> Due: {{ action.timeframe|date:"M j, Y" }}
+                        {% if action.timeframe < today %}
+                        <span class="text-danger"> (Overdue)</span>
+                        {% endif %}
+                    </small>
+                </div>
+                <div class="ms-2">
+                    <span class="priority-badge priority-{{ action.priority }}">
+                        {{ action.priority }}
+                    </span>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="text-center text-muted py-4">
+            <i class="fas fa-check-circle fa-2x mb-2"></i>
+            <p>No open action items</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>

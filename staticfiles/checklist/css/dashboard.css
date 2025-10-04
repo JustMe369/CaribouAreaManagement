@@ -1,0 +1,72 @@
+/* Modern Admin Dashboard Styles */
+:root {
+    --primary: #2c3e50;
+    --secondary: #34495e;
+    --accent: #3498db;
+    --success: #27ae60;
+    --warning: #f1c40f;
+    --danger: #e74c3c;
+    --info: #2980b9;
+    --light-bg: #f8f9fa;
+    --dark-text: #2c3e50;
+    --admin-accent: #8e44ad;
+}
+
+.dashboard-header {
+  background: var(--primary);
+  color: white;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  border-radius: 8px;
+}
+
+.metric-card {
+    background: white;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    transition: transform 0.2s ease;
+}
+
+.metric-card:hover {
+    transform: translateY(-2px);
+}
+
+.metric-card:hover {
+  transform: translateY(-5px);
+}
+
+.metric-value {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.status-badge {
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-weight: 600;
+}
+
+.status-open { background: #fee2e2; color: var(--danger); }
+.status-completed { background: #dcfce7; color: var(--success); }
+.status-in-progress { background: #fef9c3; color: #b45309; }
+
+.recent-visits-grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+.visit-card {
+  background: white;
+  padding: 1.5rem;
+  border-left: 4px solid var(--secondary);
+  border-radius: 8px;
+}
+
+@media (max-width: 768px) {
+  .metric-grid {
+    grid-template-columns: 1fr;
+  }
+}

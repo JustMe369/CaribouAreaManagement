@@ -1,0 +1,56 @@
+<div class="row mb-4">
+    <div class="col-lg-2 col-md-4 col-sm-6">
+        <div class="stats-card">
+            <div class="stats-icon">
+                <i class="fas fa-clipboard-check" alt="Clipboard Icon"></i>
+            </div>
+            <div class="stats-number">{{ total_visits|default:0 }}</div>
+            <div class="stats-label">Total Visits</div>
+        </div>
+    </div>
+    <div class="col-lg-2 col-md-4 col-sm-6">
+        <div class="stats-card">
+            <div class="stats-icon">
+                <i class="fas fa-percentage" alt="Percentage Icon"></i>
+            </div>
+            <div class="stats-number">{{ compliance_rate|default:0 }}%</div>
+            <div class="stats-label">Compliance Rate</div>
+        </div>
+    </div>
+    <div class="col-lg-2 col-md-4 col-sm-6">
+        <div class="stats-card">
+            <div class="stats-icon">
+                <i class="fas fa-tasks" alt="Tasks Icon"></i>
+            </div>
+            <div class="stats-number">{{ open_actions|length|default:0 }}</div>
+            <div class="stats-label">Open Actions</div>
+        </div>
+    </div>
+    <div class="col-lg-2 col-md-4 col-sm-6">
+        <div class="stats-card enhanced-stats">
+            <div class="stats-icon">
+                <i class="fas fa-tools" alt="Tools Icon"></i>
+            </div>
+            <div class="stats-number">{{ maintenance_visits|length|default:0 }}</div>
+            <div class="stats-label">Maintenance</div>
+        </div>
+    </div>
+    <div class="col-lg-2 col-md-4 col-sm-6">
+        <div class="stats-card">
+            <div class="stats-icon">
+                <i class="fas fa-exclamation-triangle" alt="Warning Icon"></i>
+            </div>
+            <div class="stats-number">{{ overdue_actions|length|default:0 }}</div>
+            <div class="stats-label">Overdue</div>
+        </div>
+    </div>
+    <div class="col-lg-2 col-md-4 col-sm-6">
+        <div class="stats-card">
+            <div class="stats-icon">
+                <i class="fas fa-calendar-alt" alt="Calendar Icon"></i>
+            </div>
+            <div class="stats-number">{{ recent_visits|length|default:0 }}</div>
+            <div class="stats-label">This Month</div>
+        </div>
+    </div>
+</div>

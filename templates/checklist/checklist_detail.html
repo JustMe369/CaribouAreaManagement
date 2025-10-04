@@ -1,0 +1,159 @@
+{% extends 'checklist/base.html' %}
+{% load static %}
+{% load checklist_tags %}
+
+{% block extra_head %}
+    <title>Checklist Detail - {{ visit.store.name }}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .details-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+        }
+        .details-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .details-header h1 {
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+        .details-header p {
+            font-size: 1.2rem;
+            color: #6c757d;
+        }
+        .score-badge {
+            font-size: 2rem;
+            font-weight: bold;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+        }
+        .category-card {
+            margin-bottom: 1.5rem;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+        }
+        .category-header {
+            background-color: #e9ecef;
+            padding: 1rem;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        .category-content {
+            padding: 1rem;
+        }
+        .question-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #eee;
+        }
+        .question-item:last-child {
+            border-bottom: none;
+        }
+        .question-text {
+            flex-grow: 1;
+        }
+        .answer-badge {
+            padding: 0.3rem 0.6rem;
+            border-radius: 5px;
+            color: #fff;
+            font-weight: bold;
+        }
+        .answer-yes {
+            background-color: #28a745;
+        }
+        .answer-no {
+            background-color: #dc3545;
+        }
+        .comment-section {
+            margin-top: 0.5rem;
+            font-style: italic;
+            color: #6c757d;
+        }
+        .attachment-link {
+            margin-top: 0.5rem;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="details-container">
+    <div class="details-header">
+        <h1>{{ visit.store.name }}</h1>
+        <p>Visit on {{ visit.date|date:"F d, Y" }} at {{ visit.time|time:"h:i A" }}</p>
+        <span class="score-badge bg-primary text-white">{{ visit.overall_score }}%</span>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Total Questions</h5>
+                    <p class="card-text fs-4">{{ items.count }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center text-white bg-success">
+                <div class="card-body">
+                    <h5 class="card-title">Passed</h5>
+                    <p class="card-text fs-4">{{ passed_items }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center text-white bg-danger">
+                <div class="card-body">
+                    <h5 class="card-title">Failed</h5>
+                    <p class="card-text fs-4">{{ failed_items }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% for category, questions in items_by_category.items %}
+        <div class="category-card">
+            <div class="category-header">{{ category.name }}</div>
+            <div class="category-content">
+                {% for item in questions %}
+                    <div class="question-item">
+                        <div class="question-text">
+                            <strong>{{ item.question.number }}. {{ item.question.text }}</strong>
+                        </div>
+                        <div>
+                            {% if item.answer %}
+                                <span class="answer-badge answer-yes">Yes</span>
+                            {% else %}
+                                <span class="answer-badge answer-no">No</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% if item.comment %}
+                        <div class="comment-section ps-4">
+                            <i class="fas fa-comment-dots me-2"></i>{{ item.comment }}
+                        </div>
+                    {% endif %}
+                    {% if item.attachments.all %}
+                        <div class="attachment-link ps-4">
+                            {% for attachment in item.attachments.all %}
+                                <a href="{{ attachment.file.url }}" target="_blank"><i class="fas fa-paperclip me-2"></i>View Attachment</a>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    {% endfor %}
+
+    <div class="text-center mt-4">
+        <a href="{% url 'checklist:print_visit_report' visit.id %}" class="btn btn-info" target="_blank"><i class="fas fa-print me-2"></i>Print Report</a>
+        <a href="{% url 'checklist:export_visit_excel' visit.id %}" class="btn btn-success"><i class="fas fa-file-excel me-2"></i>Export to Excel</a>
+        <a href="{% url 'checklist:checklist_history' %}" class="btn btn-secondary"><i class="fas fa-arrow-left me-2"></i>Back to History</a>
+    </div>
+</div>
+{% endblock %}

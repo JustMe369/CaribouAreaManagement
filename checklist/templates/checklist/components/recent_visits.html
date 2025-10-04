@@ -1,0 +1,38 @@
+<div class="card">
+    <div class="card-header">
+        <h5>Recent Visits</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>Store</th>
+                        <th>Date</th>
+                        <th>Score</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for visit in recent_visits %}
+                    <tr>
+                        <td>{{ visit.store.name }}</td>
+                        <td>{{ visit.date }}</td>
+                        <td>{{ visit.calculate_score }}%</td>
+                        <td>
+                            <a href="{% url 'checklist:checklist_detail' visit.id %}" 
+                               class="btn btn-sm btn-primary">
+                                View
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center">No recent visits</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,275 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Caribou Coffee Area Manager{% endblock %}
+
+{% block content %}
+<div class="header-section">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h1><i class="fas fa-tachometer-alt" alt="Dashboard Icon"></i> Area Manager Dashboard</h1>
+            <p class="mb-0">Welcome back! Here's your comprehensive overview of store visits and performance</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'checklist:checklist_history' %}" class="btn-primary-custom btn-sm">
+                <i class="fas fa-history" alt="History Icon"></i> History
+            </a>
+            <a href="{% url 'checklist:new_checklist' %}" 
+               class="btn-primary-custom btn-sm"
+>                <i class="fas fa-plus" alt="New Visit Icon"></i><br>
+                <strong>New Visit</strong>
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="p-4">
+    {% include 'checklist/dashboard_stats.html' %}
+    {% include 'checklist/dashboard_performance.html' %}
+    {% include 'checklist/dashboard_charts.html' %}
+    {% include 'checklist/dashboard_maintenance.html' %}
+    <div class="row">
+        {% include 'checklist/dashboard_recent_visits.html' %}
+        {% include 'checklist/dashboard_action_items.html' %}
+    </div>
+</div>
+
+<div class="dashboard-footer">
+    <div class="row align-items-center">
+        <div class="col-md-6 text-start">
+            <h6><i class="fas fa-info-circle"></i> System Status</h6>
+            <p class="mb-0">
+                <span class="status-indicator status-online"></span>
+                <span>All systems operational</span>
+            </p>
+        </div>
+        <div class="col-md-6 text-end">
+            <div class="last-updated">
+                <i class="fas fa-clock"></i> Last updated: {% now "F j, Y g:i A" %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Enhanced Dashboard JavaScript with Error Handling
+    class DashboardManager {
+        constructor() {
+            this.charts = {};
+            this.init();
+        }
+
+        init() {
+            this.setupCharts();
+            this.setupEventListeners();
+        }
+
+        setupCharts() {
+            try {
+                this.setupComplianceChart();
+                this.setupPriorityChart();
+            } catch (error) {
+                console.error('Error setting up charts:', error);
+                this.showChartError('complianceChart', 'Error loading compliance chart.');
+                this.showChartError('priorityChart', 'Error loading priority chart.');
+            }
+        }
+
+        setupComplianceChart() {
+            const ctx = document.getElementById('complianceChart');
+            if (!ctx) return;
+
+            const chartDates = {{ chart_dates|safe|default:"[]" }};
+            const chartScores = {{ chart_scores|safe|default:"[]" }};
+
+            if (!chartDates.length || !chartScores.length) {
+                this.showChartPlaceholder('complianceChart', 'No compliance data available');
+                return;
+            }
+
+            this.charts.compliance = new Chart(ctx.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: chartDates,
+                    datasets: [{
+                        label: 'Compliance Score',
+                        data: chartScores,
+                        borderColor: 'rgba(139, 69, 19, 1)',
+                        backgroundColor: 'rgba(139, 69, 19, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: 'rgba(139, 69, 19, 1)',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: '#fff',
+                            bodyColor: '#fff',
+                            borderColor: 'rgba(139, 69, 19, 1)',
+                            borderWidth: 1
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        setupPriorityChart() {
+            const ctx = document.getElementById('priorityChart');
+            if (!ctx) return;
+
+            const high = {{ open_actions_high|default:0 }};
+            const medium = {{ open_actions_medium|default:0 }};
+            const low = {{ open_actions_low|default:0 }};
+            const total = high + medium + low;
+
+            if (total === 0) {
+                this.showChartPlaceholder('priorityChart', 'No action items available');
+                return;
+            }
+
+            this.charts.priority = new Chart(ctx.getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['High', 'Medium', 'Low'],
+                    datasets: [{
+                        data: [high, medium, low],
+                        backgroundColor: [
+                            'rgba(220, 53, 69, 0.8)',
+                            'rgba(255, 193, 7, 0.8)',
+                            'rgba(23, 162, 184, 0.8)'
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                usePointStyle: true
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const percentage = ((context.parsed / total) * 100).toFixed(1);
+                                    return context.label + ': ' + context.parsed + ' (' + percentage + '%)';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        showChartPlaceholder(chartId, message) {
+            const chartElement = document.getElementById(chartId);
+            if (chartElement) {
+                chartElement.style.display = 'none';
+                const placeholder = document.createElement('div');
+                placeholder.className = 'text-center py-5 text-muted';
+                placeholder.innerHTML = `
+                    <i class="fas fa-chart-bar fa-3x mb-3"></i>
+                    <p>${message}</p>
+                `;
+                chartElement.parentNode.appendChild(placeholder);
+            }
+        }
+
+        showChartError(chartId, message) {
+            const chartElement = document.getElementById(chartId);
+            if (chartElement) {
+                chartElement.style.display = 'none';
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'text-center py-5 text-danger';
+                errorDiv.innerHTML = `
+                    <i class="fas fa-exclamation-triangle fa-3x mb-3"></i>
+                    <p>${message}</p>
+                `;
+                chartElement.parentNode.appendChild(errorDiv);
+            }
+        }
+
+        setupEventListeners() {
+            // Add hover effects to stats cards
+            const statsCards = document.querySelectorAll('.stats-card');
+            statsCards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-10px) scale(1.02)';
+                });
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0) scale(1)';
+                });
+            });
+
+            // Add loading states to buttons
+            const buttons = document.querySelectorAll('a[href]');
+            buttons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    if (this.href && !this.href.includes('#')) {
+                        this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+                        this.classList.add('disabled');
+                    }
+                });
+            });
+        }
+    }
+
+    // Initialize dashboard when DOM is loaded
+    document.addEventListener('DOMContentLoaded', function() {
+        new DashboardManager();
+    });
+
+    // Global error handler
+    window.addEventListener('error', function(e) {
+        console.error('Dashboard error:', e.error);
+        // Show user-friendly error message
+        const errorAlert = document.createElement('div');
+        errorAlert.className = 'alert alert-warning alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3';
+        errorAlert.style.zIndex = '9999';
+        errorAlert.innerHTML = `
+            <i class="fas fa-exclamation-triangle"></i> Some dashboard features may not be working properly. Please refresh the page.
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        document.body.appendChild(errorAlert);
+
+        setTimeout(() => {
+            errorAlert.remove();
+        }, 10000);
+    });
+</script>
+{% endblock %}

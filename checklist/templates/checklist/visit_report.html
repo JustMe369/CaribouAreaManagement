@@ -1,0 +1,78 @@
+{% extends "checklist/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Visit Report #{{ visit.id }}</h2>
+    
+    <div class="card mb-4">
+        <div class="card-header">
+            <h4>Visit Details</h4>
+        </div>
+        <div class="card-body">
+            <p><strong>Store:</strong> {{ visit.store.name }}</p>
+            <p><strong>Manager:</strong> {{ visit.manager.get_full_name }}</p>
+            <p><strong>Date:</strong> {{ visit.date }}</p>
+            <p><strong>Score:</strong> {{ visit.overall_score }}%</p>
+        </div>
+    </div>
+    
+    <div class="card mb-4">
+        <div class="card-header">
+            <h4>Checklist Items</h4>
+        </div>
+        <div class="card-body">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Category</th>
+                        <th>Question</th>
+                        <th>Answer</th>
+                        <th>Comment</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in checklist_items %}
+                    <tr>
+                        <td>{{ item.question.category.name }}</td>
+                        <td>Q{{ item.question.number }}: {{ item.question.text }}</td>
+                        <td>{% if item.answer %}Yes{% else %}No{% endif %}</td>
+                        <td>{{ item.comment|default:"-" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    {% if action_items %}
+    <div class="card">
+        <div class="card-header">
+            <h4>Action Items</h4>
+        </div>
+        <div class="card-body">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th>Responsible</th>
+                        <th>Due Date</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in action_items %}
+                    <tr>
+                        <td>{{ item.what }}</td>
+                        <td>{{ item.who }}</td>
+                        <td>{{ item.timeframe }}</td>
+                        <td>{{ item.get_status_display }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

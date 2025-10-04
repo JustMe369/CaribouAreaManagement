@@ -1,0 +1,29 @@
+<div class="row mb-4">
+    <div class="col-lg-8">
+        <div class="chart-container">
+            <h4><i class="fas fa-chart-line"></i> Compliance Trend (Last 30 Days)</h4>
+            <div class="loading-spinner" id="complianceChartLoading">
+                <i class="fas fa-spinner fa-spin fa-2x"></i>
+                <p>Loading chart data...</p>
+            </div>
+            <canvas id="complianceChart" height="100"></canvas>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="chart-container">
+            <h4><i class="fas fa-chart-pie"></i> Action Items Priority Distribution</h4>
+            <div class="loading-spinner" id="priorityChartLoading">
+                <i class="fas fa-spinner fa-spin fa-2x"></i>
+                <p>Loading chart data...</p>
+            </div>
+            <canvas id="priorityChart"></canvas>
+            <div class="mt-3 text-center">
+                <small class="text-muted">
+                    <span class="badge bg-danger">{{ open_actions_high|default:0 }} High</span>
+                    <span class="badge bg-warning">{{ open_actions_medium|default:0 }} Medium</span>
+                    <span class="badge bg-info">{{ open_actions_low|default:0 }} Low</span>
+                </small>
+            </div>
+        </div>
+    </div>
+</div>

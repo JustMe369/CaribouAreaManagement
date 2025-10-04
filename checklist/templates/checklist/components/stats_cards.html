@@ -1,0 +1,13 @@
+<div class="row">
+  {% for stat in stats %}
+  <div class="col-md-3 mb-4">
+    <div class="card stat-card">
+      <div class="card-body">
+        <h5 class="card-title">{{ stat.title }}</h5>
+        <h2 class="card-value">{{ stat.value }}</h2>
+        <p class="card-subtitle">{{ stat.subtitle }}</p>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>

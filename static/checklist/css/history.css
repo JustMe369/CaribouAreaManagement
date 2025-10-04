@@ -1,0 +1,31 @@
+.history-container {
+    padding: 2rem;
+    background: linear-gradient(to right, #f8f9fa, #e9ecef);
+}
+
+.card {
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.table-hover tbody tr {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.table-hover tbody tr:hover {
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.bg-primary {
+    background-color: #2c3e50 !important;
+}
+
+.badge {
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.bg-success { background-color: #27ae60; }
+.bg-warning { background-color: #f1c40f; }
+.bg-danger { background-color: #e74c3c; }

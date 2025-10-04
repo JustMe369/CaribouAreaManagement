@@ -1,0 +1,120 @@
+{% extends "checklist/base.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block title %}New Maintenance Ticket - Caribou Coffee{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow border-0">
+                <div class="card-header bg-primary text-white py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0"><i class="fas fa-plus-circle me-2"></i>Create New Maintenance Ticket</h4>
+                        <a href="{% url 'checklist:maintenance_list' %}" class="btn btn-light btn-sm">
+                            <i class="fas fa-arrow-left me-1"></i> Back to Tickets
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body p-4">
+                    {% if form.errors %}
+                        <div class="alert alert-danger">
+                            <h6>Please correct the following errors:</h6>
+                            {{ form.errors }}
+                        </div>
+                    {% endif %}
+                    
+                    <form method="POST" enctype="multipart/form-data" id="maintenanceForm">
+                        {% csrf_token %}
+                        
+                        <!-- Basic Information Card -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Basic Information</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        {{ form.visit|as_crispy_field }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        {{ form.equipment|as_crispy_field }}
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        {{ form.priority|as_crispy_field }}
+                                    </div>
+                                    <div class="col-md-4">
+                                        {{ form.status|as_crispy_field }}
+                                    </div>
+                                    <div class="col-md-4">
+                                        {{ form.due_date|as_crispy_field }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Issue Details Card -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Issue Details</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    {{ form.issue_description|as_crispy_field }}
+                                </div>
+                                <!-- Remove the technician_notes field below -->
+                            </div>
+                        </div>
+                        
+                        <!-- Attachments Card -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0"><i class="fas fa-paperclip me-2"></i>Attachments</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label for="{{ form.attachments.id_for_label }}" class="form-label">Upload Files</label>
+                                    <input type="file" name="{{ form.attachments.name }}" class="form-control" multiple id="{{ form.attachments.id_for_label }}">
+                                    <div class="form-text">You can upload multiple files. Supported formats: JPG, PNG, PDF (Max 10MB each)</div>
+                                </div>
+                                
+                                <!-- File preview area -->
+                                <div id="filePreview" class="mt-3" style="display: none;">
+                                    <h6>Selected Files:</h6>
+                                    <ul id="fileList" class="list-group"></ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Actions -->
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% url 'checklist:maintenance_list' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-1"></i> Cancel
+                            </a>
+                            <div>
+                                <button type="submit" name="save_draft" class="btn btn-outline-primary me-2">
+                                    <i class="fas fa-save me-1"></i> Save as Draft
+                                </button>
+                                <button type="submit" name="submit" class="btn btn-primary">
+                                    <i class="fas fa-check me-1"></i> Submit Ticket
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const attachmentFieldId = '{{ form.attachments.id_for_label }}';
+    const dueDateFieldId = '{{ form.due_date.id_for_label }}';
+</script>
+<script src="{% static 'checklist/js/new_maintenance.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,64 @@
+{% extends "checklist/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card shadow-lg">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">New Checklist</h3>
+                </div>
+                <div class="card-body">
+                    <form id="checklist-form" method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <!-- Store Selection -->
+                        <div class="form-group mb-4">
+                            <label class="form-label">Store</label>
+                            <select class="form-select" name="store" id="store-select" required>
+                                {% for store in stores %}
+                                <option value="{{ store.id }}">{{ store.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <!-- Dynamic Checklist Sections -->
+                        <div class="accordion" id="checklist-accordion">
+                            <!-- Remove all accordion markup -->
+                            {% for category, questions in questions_by_category.items %}
+                            <div class="category-section">
+                                <h3 class="category-title">{{ category.name }}</h3>
+                                <div class="questions-container">
+                                    {% for question in questions %}
+                                    <div class="question-item">
+                                        <!-- Keep existing question markup -->
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        
+                        <!-- Form Actions -->
+                        <div class="d-flex justify-content-between mt-4">
+                            <button type="button" class="btn btn-outline-secondary" 
+                                    id="expand-all">Expand All</button>
+                            <div>
+                                <button type="submit" name="action" value="draft" 
+                                        class="btn btn-warning me-2">Save Draft</button>
+                                <button type="submit" name="action" value="submit" 
+                                        class="btn btn-success">Submit</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'checklist/js/new_checklist.js' %}"></script>
+{% endblock %}

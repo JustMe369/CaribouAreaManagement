@@ -1,0 +1,80 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+    <div class="container">
+        <a class="navbar-brand" href="{% url 'checklist:dashboard' %}">
+            <i class="fas fa-paw me-2"></i>
+            Caribou | AM
+        </a>
+        
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" title="Toggle navigation" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+            <span class="visually-hidden">Toggle navigation</span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="mainNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'checklist:new_checklist' %}">
+                        <i class="fas fa-clipboard-check me-1"></i>
+                        New Visit
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'checklist:checklist_history' %}">
+                        <i class="fas fa-history me-1"></i>
+                        History
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'checklist:maintenance_list' %}">
+                        <i class="fas fa-tools me-1"></i>
+                        Maintenance
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'checklist:store_list' %}">
+                        <i class="fas fa-store me-1"></i>
+                        Stores
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'checklist:reports' %}">
+                        <i class="fas fa-chart-bar me-1"></i>
+                        Reports
+                    </a>
+                </li>
+            </ul>
+            
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item dropdown">
+                    <button class="nav-link dropdown-toggle btn btn-link" type="button" data-bs-toggle="dropdown" aria-expanded="false" onkeydown="if(event.key==='Enter'||event.key===' '){this.click()}">
+                        <i class="fas fa-user-circle me-1"></i>
+                        {{ user.get_full_name|default:user.get_username }}
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="{% url 'profile' %}">
+                            <i class="fas fa-user me-1"></i> Profile
+                        </a></li>
+                        <li><a class="dropdown-item" href="{% url 'settings' %}">
+                            <i class="fas fa-cog me-1"></i> Settings
+                        </a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <form action="{% url 'logout' %}" method="post" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="dropdown-item text-danger" style="border: none; background: none; cursor: pointer;">
+                                    <i class="fas fa-sign-out-alt me-1"></i>
+                                    Logout
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'help' %}" title="Help">
+                        <i class="fas fa-question-circle"></i>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>

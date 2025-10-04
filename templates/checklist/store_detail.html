@@ -1,0 +1,69 @@
+{% extends 'checklist/base.html' %}
+{% block title %}Store Details | Caribou Area Manager{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0"><i class="fas fa-store me-2"></i>{{ store.name }}</h2>
+    <div>
+      <a href="{% url 'checklist:store_list' %}" class="btn btn-sm btn-outline-secondary"><i class="fas fa-arrow-left me-1"></i> Back</a>
+      <a href="{% url 'checklist:new_checklist' %}?store={{ store.id }}" class="btn btn-sm btn-primary"><i class="fas fa-clipboard-check me-1"></i> New Visit</a>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-12 col-lg-4">
+      <div class="card shadow-sm h-100">
+        <div class="card-body">
+          <h6 class="text-muted">Store Information</h6>
+          <ul class="list-unstyled mb-0 small">
+            <li><strong>Manager:</strong> {{ store.manager_name|default:'-' }}</li>
+            <li><strong>Phone:</strong> {{ store.phone|default:'-' }}</li>
+            <li><strong>Email:</strong> {{ store.email|default:'-' }}</li>
+            <li><strong>Area:</strong> {{ store.area.name|default:'-' }}</li>
+            <li><strong>Address:</strong> {{ store.address|default:'-' }}</li>
+            <li><strong>Status:</strong> {{ store.is_active|yesno:'Active,Inactive' }}</li>
+          </ul>
+        </div>
+        <div class="card-footer bg-white">
+          <div class="text-muted small">Avg score (your visits): <strong>{{ avg }}%</strong></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-lg-8">
+      <div class="card shadow-sm">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+          <span class="section-title"><i class="fas fa-clipboard-list me-1"></i> Recent Visits</span>
+          <a href="{% url 'checklist:checklist_history' %}" class="btn btn-sm btn-outline-primary">History</a>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-sm table-striped mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Date</th>
+                <th>Manager</th>
+                <th>Score</th>
+                <th>Details</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for v in visits %}
+              <tr>
+                <td>{{ v.date }}</td>
+                <td>{{ v.manager.get_full_name|default:v.manager.username }}</td>
+                <td>{{ v.calculate_score }}%</td>
+                <td>
+                  <a href="{% url 'checklist:checklist_detail' v.id %}" class="btn btn-sm btn-outline-secondary">View</a>
+                </td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="4" class="text-muted">No visits.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

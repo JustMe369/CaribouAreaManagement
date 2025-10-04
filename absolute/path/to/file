@@ -1,0 +1,41 @@
+# ... existing code ...
+
+'overdue': maintenance_query.filter(
+    status__in=['pending', 'in_progress'],
+    due_date__lt=today  # Changed from target_date to due_date
+).count(),
+
+# Security upgrades (add before database config)
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+
+if not DEBUG:
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+
+# Add at bottom for production readiness
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'WARNING',
+    },
+}
+
+# Time zone customization (update existing)
+TIME_ZONE = 'America/New_York'
+USE_TZ = True
+
+# Ensure recent_visits is not sliced before filtering
+'pending': MaintenanceTicket.objects.filter(
+    maintenance_needed__isnull=False
+).exclude(maintenance_needed='').count(),
+
+# ... existing code ...

@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visit Details - {{ visit.store.name }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #8B4513;
+            --secondary-color: #D2691E;
+            --accent-color: #FF8C00;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --light-bg: #f8f9fa;
+            --dark-text: #2c3e50;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+        
+        .main-container {
+            background: rgba(255, 255, 255, 0.95);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            margin: 20px auto;
+            max-width: 1400px;
+        }
+        
+        .header-section {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border-radius: 20px 20px 0 0;
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .score-badge {
+            font-size: 2rem;
+            font-weight: bold;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            background: linear-gradient(135deg, var(--success-color), #20c997);
+            color: white;
+            display: inline-block;
+            margin: 1rem 0;
+        }
+        
+        .category-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+        }
+        
+        .category-header {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        
+        .question-item {
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        
+        .question-item:last-child {
+            border-bottom: none;
+        }
+        
+        .status-yes {
+            color: var(--success-color);
+        }
+        
+        .status-no {
+            color: var(--danger-color);
+        }
+        
+        .action-item {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .progress {
+            height: 8px;
+            border-radius: 4px;
+        }
+        
+        .btn-back {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border: none;
+            border-radius: 10px;
+            padding: 0.75rem 1.5rem;
+            color: white;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-back:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            color: white;
+        }
+        
+        .score-bar {
+            width: 0;
+            transition: width 0.8s;
+        }
+        
+        .category-icon {
+            width: 30px;
+            text-align: center;
+            margin-right: 10px;
+        }
+    </style>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            document.querySelectorAll('.score-bar').forEach(function(bar) {
+                var score = bar.getAttribute('data-score');
+                if (score) {
+                    setTimeout(function() {
+                        bar.style.width = score + '%';
+                    }, 100);
+                }
+            });
+        });
+    </script>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="main-container">
+            <!-- Header Section -->
+            <div class="header-section">
+                <h1><i class="fas fa-clipboard-check"></i> Visit Details</h1>
+                <h3>{{ visit.store.name }}</h3>
+                <p class="mb-0">
+                    <i class="fas fa-calendar"></i> {{ visit.date|date:"F j, Y" }} | 
+                    <i class="fas fa-user"></i> {{ visit.manager.get_full_name|default:visit.manager.username }}
+                </p>
+                {% if overall_score >= 0 %}
+                <div class="score-badge">
+                    {{ overall_score }}% Compliance
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="p-4">
+                <!-- Visit Information -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5><i class="fas fa-info-circle"></i> Visit Information</h5>
+                            </div>
+                            <div class="card-body">
+                                <p><strong>Month:</strong> {{ visit.month }}</p>
+                                <p><strong>Day:</strong> {{ visit.day }}</p>
+                                <p><strong>Time:</strong> {{ visit.time|time:"g:i A" }}</p>
+                                {% if visit.run_out_items %}
+                                <p><strong>Run Out Items:</strong> {{ visit.run_out_items }}</p>
+                                {% endif %}
+                                {% if visit.maintenance_needed %}
+                                <p><strong>Maintenance Needed:</strong> {{ visit.maintenance_needed }}</p>
+                                {% endif %}
+                                {% if visit.general_notes %}
+                                <p><strong>General Notes:</strong></p>
+                                <p>{{ visit.general_notes|linebreaks }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5><i class="fas fa-chart-bar"></i> Category Scores</h5>
+                            </div>
+                            <div class="card-body">
+                                {% for category, score in category_scores.items %}
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between">
+                                        <span>{{ category }}</span>
+                                        <span class="fw-bold">{{ score }}%</span>
+                                    </div>
+                                    <div class="progress">
+                                        <div class="progress-bar bg-success score-bar" data-score="{{ score }}"></div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Checklist Items by Category -->
+                {% regroup items by category as category_list %}
+                {% for category in category_list %}
+                <div class="category-card">
+                    <div class="category-header">
+                        <h5>
+                            <span class="category-icon">
+                                {% if category.grouper == "Store Operations" %}
+                                <i class="fas fa-store"></i>
+                                {% elif category.grouper == "Customer Experience" %}
+                                <i class="fas fa-users"></i>
+                                {% elif category.grouper == "Team & Staff" %}
+                                <i class="fas fa-user-friends"></i>
+                                {% elif category.grouper == "Sales & Performance" %}
+                                <i class="fas fa-chart-line"></i>
+                                {% elif category.grouper == "Health & Safety" %}
+                                <i class="fas fa-first-aid"></i>
+                                {% elif category.grouper == "Maintenance & Assets" %}
+                                <i class="fas fa-tools"></i>
+                                {% elif category.grouper == "Administration" %}
+                                <i class="fas fa-clipboard-list"></i>
+                                {% else %}
+                                <i class="fas fa-question-circle"></i>
+                                {% endif %}
+                            </span>
+                            {{ category.grouper }}
+                            <span class="float-end">
+                                {{ category_scores|get_item:category.grouper }}%
+                            </span>
+                        </h5>
+                    </div>
+                    <div class="category-content">
+                        {% for item in category.list %}
+                        <div class="question-item">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <strong>Q{{ item.question_number }}:</strong> {{ item.question_text }}
+                                    {% if item.comment %}
+                                    <div class="mt-2 text-muted">
+                                        <small><i class="fas fa-comment"></i> {{ item.comment }}</small>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div class="ms-3">
+                                    {% if item.answer %}
+                                    <span class="badge bg-success status-yes">
+                                        <i class="fas fa-check"></i> Yes
+                                    </span>
+                                    {% else %}
+                                    <span class="badge bg-danger status-no">
+                                        <i class="fas fa-times"></i> No
+                                    </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+
+                <!-- Action Items -->
+                {% if action_items %}
+                <div class="category-card">
+                    <div class="category-header">
+                        <h5><i class="fas fa-tasks"></i> Action Items</h5>
+                    </div>
+                    <div class="category-content">
+                        {% for action in action_items %}
+                        <div class="action-item">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <strong>{{ action.what }}</strong>
+                                    {% if action.remarks %}
+                                    <div class="text-muted mt-1">
+                                        <small>{{ action.remarks }}</small>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-4 text-end">
+                                    <div><strong>Responsible:</strong> {{ action.who }}</div>
+                                    <div><strong>Due:</strong> {{ action.timeframe|date:"M j, Y" }}</div>
+                                    <div>
+                                        <span class="badge bg-{{ action.priority }} text-white me-1">
+                                            {{ action.priority|title }}
+                                        </span>
+                                        <span class="badge bg-{% if action.status == 'open' %}warning{% elif action.status == 'in_progress' %}info{% else %}success{% endif %} text-white">
+                                            {{ action.status|title }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Back Button -->
+                <div class="text-center mt-4">
+                    <a href="{% url 'checklist:checklist_history' %}" class="btn-back">
+                        <i class="fas fa-arrow-left"></i> Back to History
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

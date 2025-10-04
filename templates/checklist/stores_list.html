@@ -1,0 +1,117 @@
+{% extends 'checklist/base.html' %}
+{% load static %}
+
+{% block title %}Stores | Caribou Area Manager{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <header class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="h2 mb-1">
+        <i class="fas fa-store me-2" aria-hidden="true"></i>
+        My Stores
+      </h1>
+      <p class="text-muted small mb-0">Accessible stores assigned to your profile</p>
+    </div>
+    <div class="d-flex align-items-center">
+      <span class="badge rounded-pill bg-light text-dark me-2">
+        {{ stores|length }} store{{ stores|pluralize }}
+      </span>
+      <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#helpModal">
+        <i class="fas fa-question-circle"></i>
+      </button>
+    </div>
+  </header>
+
+  <div class="row g-4">
+    {% for item in stores %}
+    <div class="col-12 col-md-6 col-lg-4">
+      <article class="card shadow-sm h-100" aria-labelledby="store-{{ item.store.id }}-title">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-start mb-3">
+            <div>
+              <h2 class="h5 card-title mb-1" id="store-{{ item.store.id }}-title">
+                {{ item.store.name }}
+              </h2>
+              <p class="text-muted small mb-0">
+                <span class="visually-hidden">Manager: </span>
+                {{ item.store.manager_name|default:'Not assigned' }}
+              </p>
+            </div>
+            <span class="badge rounded-pill bg-{{ item.store.is_active|yesno:'success,secondary' }}">
+              {{ item.store.is_active|yesno:'Active,Inactive' }}
+            </span>
+          </div>
+          
+          <hr class="my-3">
+          
+          <div class="row text-center g-2">
+            <div class="col">
+              <p class="text-muted small mb-1">Avg Score</p>
+              <p class="fs-5 fw-bold mb-0">{{ item.avg }}%</p>
+            </div>
+            <div class="col">
+              <p class="text-muted small mb-1">Visits</p>
+              <p class="fs-5 fw-bold mb-0">{{ item.visits }}</p>
+            </div>
+            <div class="col">
+              <p class="text-muted small mb-1">Last Visit</p>
+              <p class="fs-6 mb-0">{{ item.last|default:'Never' }}</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card-footer bg-white border-top-0 d-flex justify-content-end gap-2">
+          <a href="{% url 'checklist:store_detail' item.store.id %}" 
+             class="btn btn-sm btn-outline-primary"
+             aria-label="View details for {{ item.store.name }}">
+            <i class="fas fa-eye me-1" aria-hidden="true"></i>
+            View
+          </a>
+          <a href="{% url 'checklist:new_checklist' %}?store={{ item.store.id }}" 
+             class="btn btn-sm btn-primary"
+             aria-label="Create new visit for {{ item.store.name }}">
+            <i class="fas fa-clipboard-check me-1" aria-hidden="true"></i>
+            New Visit
+          </a>
+        </div>
+      </article>
+    </div>
+    {% empty %}
+    <div class="col-12">
+      <div class="alert alert-info" role="alert">
+        <i class="fas fa-info-circle me-2"></i>
+        No stores available for your account. Please contact your administrator.
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Help Modal -->
+<div class="modal fade" id="helpModal" tabindex="-1" aria-labelledby="helpModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="helpModalLabel">Stores Help</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>This page displays all stores assigned to your account. Each store card shows:</p>
+        <ul>
+          <li>Store name and manager</li>
+          <li>Current status (Active/Inactive)</li>
+          <li>Average checklist score</li>
+          <li>Number of visits</li>
+          <li>Date of last visit</li>
+        </ul>
+        <p>Use the <strong>View</strong> button to see detailed information about a store.</p>
+        <p>Use the <strong>New Visit</strong> button to start a new checklist for that store.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
