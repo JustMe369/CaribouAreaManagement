@@ -11,14 +11,15 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Security settings
-SECRET_KEY = 'django-insecure-u@mlp)dyqlg_m(et+v^1l8@w%cg7q8tx=z&u+qrme+zz#ad@6l'
-DEBUG = True
-ALLOWED_HOSTS = []
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-u@mlp)dyqlg_m(et+v^1l8@w%cg7q8tx=z&u+qrme+zz#ad@6l')
+DEBUG = os.environ.get('VERCEL') is None
+ALLOWED_HOSTS = [os.environ.get('VERCEL_URL'), '127.0.0.1']
 
 # Application definition
 INSTALLED_APPS = [
